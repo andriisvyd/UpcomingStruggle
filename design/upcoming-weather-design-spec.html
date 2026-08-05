@@ -1,0 +1,1129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upcoming Weather — Android design spec v1.0</title>
+<style>
+  /* ============ document chrome ============ */
+  :root{
+    --paper:#F6F7F9; --ink:#171A20; --mut:#5B6270; --line:#E1E5EC;
+    --acc:#2F5FA8; --acc-deep:#24497F; --codebg:#10131A; --chipbg:#EDF0F6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 28px 110px}
+  a{color:var(--acc);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;
+     background:var(--chipbg);padding:1px 6px;border-radius:5px;white-space:nowrap}
+  .mut{color:var(--mut)}
+
+  header.doc{padding:60px 0 6px}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+  header.doc h1{font-size:clamp(30px,4.4vw,42px);font-weight:800;letter-spacing:-.02em;margin:8px 0 10px}
+  header.doc h1 small{font-weight:500;color:var(--mut);font-size:.5em;letter-spacing:0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+  .meta span{font-size:12px;font-weight:600;color:var(--acc-deep);background:#E5EDFA;
+             border-radius:999px;padding:5px 12px}
+  .lead{color:var(--mut);max-width:74ch;font-size:15.5px}
+
+  nav.toc{position:sticky;top:0;z-index:60;background:rgba(246,247,249,.94);
+          backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+          display:flex;gap:24px;overflow-x:auto;padding:13px 2px;margin-top:26px}
+  nav.toc a{font-size:13px;font-weight:600;color:var(--mut);white-space:nowrap}
+  nav.toc a:hover{color:var(--ink);text-decoration:none}
+
+  section{margin-top:78px}
+  section h2{font-size:24px;font-weight:750;letter-spacing:-.01em;margin:6px 0 8px}
+  h3{font-size:16.5px;font-weight:700;margin:34px 0 4px}
+  ul.tight{margin:10px 0 0;padding-left:20px}
+  ul.tight li{margin:6px 0}
+  .note{border-left:3px solid var(--acc);background:#EDF2FB;border-radius:0 10px 10px 0;
+        padding:12px 16px;font-size:14px;margin-top:16px;max-width:80ch}
+
+  table.t{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+  .t th{text-align:left;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+        color:var(--mut);font-weight:700;padding:8px 12px;border-bottom:2px solid var(--ink)}
+  .t td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .t tr:last-child td{border-bottom:none}
+  .sw{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;
+      margin-right:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+  .grad{display:inline-block;width:66px;height:22px;border-radius:6px;vertical-align:middle;
+        margin-right:10px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+
+  pre.code{background:var(--codebg);color:#D9E0EC;border-radius:14px;padding:18px 22px;
+           font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+           font-size:12.5px;line-height:1.6;overflow-x:auto;margin-top:14px}
+  pre.code .cm{color:#7C8CA6}
+
+  /* phone shots */
+  .shots{display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start;margin-top:30px}
+  .shot{display:flex;flex-direction:column;gap:12px}
+  .cap{font-size:12.5px;font-weight:600;color:var(--mut);text-align:center;max-width:376px}
+
+  /* component demo rows */
+  .comp{display:grid;grid-template-columns:376px 1fr;gap:32px;padding:26px 0;
+        border-top:1px solid var(--line);align-items:start}
+  .comp:first-of-type{border-top:none}
+  .demo{position:relative;overflow:hidden;border-radius:18px;padding:22px;display:flex;justify-content:center;
+        color:var(--on);font-family:'Courier Prime','Courier New',Courier,monospace}
+  .demo .stage{width:328px}
+  .comp h4{margin:0 0 2px;font-size:15.5px}
+  .comp .t{margin-top:10px}
+  .compose{font-size:13px;margin-top:12px}
+  .compose b{color:var(--acc-deep)}
+
+  /* architecture diagram */
+  .arch{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:22px}
+  .arow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .modb{border:1.5px solid var(--ink);border-radius:10px;padding:9px 16px;background:#fff;
+        font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;font-weight:600}
+  .modb.core{border-style:dashed}
+  .dep{font-size:11px;color:var(--mut);letter-spacing:.05em}
+
+  .icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-top:16px}
+  .icn{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;gap:10px;
+       align-items:center;font-size:12.5px;background:#fff}
+  .icn svg{width:22px;height:22px;flex:0 0 auto;color:var(--acc-deep);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter}
+  .icn small{display:block;color:var(--mut);font-size:11px}
+
+  footer{margin-top:90px;border-top:1px solid var(--line);padding-top:22px;
+         font-size:13px;color:var(--mut)}
+
+  /* ============ theme variables shared by frames & demos ============ */
+  .light{--bg:#E2DFD7;--surface:#EDEAE1;--surface-alt:#D6D2C6;--on:#191813;--on-var:#625E52;
+         --outline:#C4C0B3;--primary:#8A5510;--on-primary:#F6EFDF;--precip:#3E6C99;--grain:.05}
+  .dark{--bg:#0B0E13;--surface:#12161D;--surface-alt:#1B212B;--on:#E8E6DF;--on-var:#98A0AD;
+        --outline:#2E3542;--primary:#E0A458;--on-primary:#241503;--precip:#7FA3C9;--grain:.04}
+  .demo.light{background:#E2DFD7}
+  .demo.dark{background:#0B0E13}
+  .frame::after,.demo::after{content:"";position:absolute;inset:0;pointer-events:none;
+    opacity:var(--grain,.04);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='gr'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23gr)'/></svg>")}
+
+  /* condition stamp inks — day grade under .light, night grade under .dark */
+  .stamp{display:inline-block;border:1.5px solid currentColor;border-radius:2px;
+         padding:3px 9px;font-size:12px;font-weight:700;letter-spacing:.1em;
+         text-transform:uppercase;transform:rotate(-2deg);margin:8px 0 4px}
+  .light .ink-clear{color:#8F5B0E}    .dark .ink-clear{color:#D9A050}
+  .light .ink-night{color:#4E6480}    .dark .ink-night{color:#8FA3C0}
+  .light .ink-partly{color:#5A665C}   .dark .ink-partly{color:#9AA89E}
+  .light .ink-overcast{color:#5A5F68} .dark .ink-overcast{color:#98A0AD}
+  .light .ink-fog{color:#6E6754}      .dark .ink-fog{color:#A8A092}
+  .light .ink-rain{color:#3E6C99}     .dark .ink-rain{color:#7FA3C9}
+  .light .ink-snow{color:#37707A}     .dark .ink-snow{color:#86BFC6}
+  .light .ink-thunder{color:#9C4A32}  .dark .ink-thunder{color:#C96A4C}
+
+  /* ============ phone frame ============ */
+  .frame{width:360px;flex:0 0 auto;border-radius:30px;overflow:hidden;position:relative;background:var(--bg);
+         color:var(--on);box-shadow:0 0 0 8px #10131A,0 24px 60px rgba(23,26,32,.22);
+         margin:8px;font-family:'Courier Prime','Courier New',Courier,monospace;font-size:14px;line-height:1.3}
+  .frame svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter}
+  .statusbar{height:28px;display:flex;justify-content:space-between;align-items:center;
+             padding:0 20px;font-size:12px;font-weight:600}
+  .sb-r{display:flex;gap:5px;align-items:center;font-size:10px;letter-spacing:.05em}
+  .appbar{height:64px;display:flex;align-items:center;padding:0 6px}
+  .appbar .title{flex:1;display:flex;justify-content:center;align-items:center;gap:4px;
+                 font-size:18px;font-weight:700}
+  .appbar .title svg{width:18px;height:18px;color:var(--on-var)}
+  .iconbtn{width:48px;height:48px;display:grid;place-items:center;border-radius:24px;
+           color:var(--on);background:none;border:0}
+  .iconbtn svg{width:24px;height:24px}
+  .body16{padding:0 16px}
+
+  .hero{padding:14px 4px 2px;margin-top:0}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start}
+  .temp{font-size:72px;font-weight:400;line-height:1;letter-spacing:-1px}
+  .cond{font-size:16px;font-style:italic;margin-top:2px}
+  .hmeta{font-size:12px;font-weight:400;margin-top:6px;color:var(--on-var);letter-spacing:.2px}
+  .hero-ic{width:88px;height:88px;stroke-width:1.5 !important;opacity:.96;margin:4px 0 0 8px}
+  .hero-upd{text-align:right;font-size:11px;font-weight:400;color:var(--on-var);margin-top:10px}
+
+  .sh{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:24px 2px 12px}
+  .chiprow{display:flex;gap:16px;overflow-x:auto;margin:0 -16px;padding:0 16px 4px;
+           scrollbar-width:none}
+  .chiprow::-webkit-scrollbar{display:none}
+  .chip{width:64px;min-width:64px;height:104px;position:relative;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+  .chip + .chip::before{content:"|\A|\A|\A|";white-space:pre;position:absolute;left:-13px;top:50%;
+        transform:translateY(-50%);font-size:12px;line-height:23px;color:var(--on-var);opacity:.75;
+        font-weight:500;text-align:center;pointer-events:none}
+  .chip svg{width:28px;height:28px;margin:2px 0}
+  .c-t{font-size:12px;font-weight:500;color:var(--on-var)}
+  .c-temp{font-size:14px;font-weight:700}
+  .c-p{font-size:11px;font-weight:500;color:var(--precip);min-height:14px}
+
+  .ledger{margin-top:6px}
+  .rdg{padding-top:13px}
+  .rdg-l{display:flex;align-items:baseline}
+  .rdg-l>span:first-child{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--on-var)}
+  .dots{flex:1;border-bottom:2px dotted var(--on-var);opacity:.55;margin:0 8px 3px}
+  .rdg-v{font-size:16px;font-weight:700}
+  .rdg-s{font-size:12px;color:var(--on-var);margin:3px 0 0 16px}
+  .slot{display:flex;align-items:center;height:48px;gap:10px}
+  .slot + .slot{border-top:1px solid var(--outline)}
+  .s-t{width:48px;font-size:14px}
+  .slot .wg{width:24px;height:24px;font-size:14px;justify-content:flex-start}
+  .s-p{width:32px;font-size:11px;font-weight:500;color:var(--precip)}
+  .s-v{width:34px;font-size:14px;font-weight:700;text-align:right}
+
+  .week{padding:0 2px}
+  .day{display:flex;align-items:center;height:52px;gap:10px}
+  .day + .day{border-top:1px solid var(--outline)}
+  .d-name{width:58px;font-size:16px}
+  .day svg{width:24px;height:24px;flex:0 0 auto}
+  .d-p{width:32px;font-size:11px;font-weight:500;color:var(--precip)}
+  .d-min{width:30px;font-size:14px;color:var(--on-var);text-align:right}
+  .range{flex:1;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap}
+  .rt{color:var(--on-var);opacity:.5}
+  .rf{color:var(--primary)}
+  .d-max{width:32px;font-size:14px;font-weight:700;text-align:right}
+  .d-go{width:12px;font-weight:700;color:var(--on-var)}
+  .attrib{text-align:center;font-size:11px;color:var(--on-var);padding:18px 0 24px}
+
+  /* icon condition tints */
+  .wg{font-weight:700;font-style:normal;display:flex;align-items:center;justify-content:center}
+  .chip .wg{height:28px;font-size:16px;margin:2px 0}
+  .day .wg{width:24px;height:24px;font-size:14px;flex:0 0 auto;justify-content:flex-start}
+  .hero-glyph{font-size:44px;font-weight:700;line-height:1;margin:10px 0 0 8px;letter-spacing:-1px}
+
+  /* search screen */
+  .sfield{flex:1;height:48px;background:var(--surface-alt);border-radius:4px;border:1px solid var(--outline);display:flex;
+          align-items:center;gap:10px;padding:0 14px;margin-right:10px;font-size:16px}
+  .sfield svg{width:20px;height:20px;color:var(--on-var)}
+  .sfield .q{flex:1}
+  .caretbar{display:inline-block;width:1.5px;height:18px;background:var(--primary);
+            vertical-align:-3px;margin-left:1px}
+  .lrow{display:flex;align-items:center;gap:14px;min-height:60px;padding:4px 4px}
+  .lrow svg{width:22px;height:22px;color:var(--on-var);flex:0 0 auto}
+  .lrow .l1{font-size:16px}
+  .lrow .l2{font-size:13px;color:var(--on-var);margin-top:1px}
+  .lrow.loc svg,.lrow.loc .l1{color:var(--primary);font-weight:500}
+  .ldiv{height:1px;background:var(--outline);margin:6px 0}
+  .lhead{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+         color:var(--on-var);margin:16px 4px 4px}
+
+  /* states */
+  .tsk{color:var(--on-var);opacity:.5;font-size:12px;font-weight:700;letter-spacing:.04em;
+       white-space:nowrap;overflow:hidden}
+  .tsk-l{font-size:11px;letter-spacing:.08em}
+  .caret{display:inline-block;width:9px;height:15px;background:var(--primary);
+         vertical-align:-3px;animation:blink 1.06s steps(1) infinite}
+  @keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.caret{animation:none}}
+  .staterr{padding:84px 28px;display:flex;flex-direction:column;align-items:center;
+           gap:10px;text-align:center}
+  .staterr .eg{font-size:40px;font-weight:700;color:var(--on-var);line-height:1}
+  .st-t{font-size:18px;font-weight:700;margin-top:6px}
+  .st-b{font-size:14px;color:var(--on-var);max-width:34ch}
+  .btn{height:44px;background:none;color:var(--primary);border:0;padding:0 8px;
+       font-size:15px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-top:16px}
+  .btn-text{background:none;color:var(--on-var);border:0;font-size:14px;font-weight:400;
+            text-transform:lowercase;padding:10px 8px}
+  .banner{display:flex;align-items:center;gap:10px;background:var(--surface-alt);
+          border-radius:4px;border:1px solid var(--outline);padding:10px 12px;font-size:13px}
+  .banner svg{width:20px;height:20px;color:var(--on-var);flex:0 0 auto}
+  .banner b{font-weight:600}
+  .banner .btn-text{margin-left:auto;padding:4px 6px;font-size:13px}
+
+  /* annotation dots */
+  .anno{position:relative}
+  .dot{position:absolute;right:12px;width:22px;height:22px;border-radius:50%;background:var(--acc);
+       color:#fff;font:700 12px/22px system-ui;text-align:center;
+       box-shadow:0 0 0 3px rgba(255,255,255,.85),0 2px 6px rgba(0,0,0,.3);z-index:5}
+  .legend{max-width:560px}
+  .legend .t td:first-child{width:34px;font-weight:700;color:var(--acc)}
+
+  @media (max-width:860px){
+    .comp{grid-template-columns:1fr}
+    .shots{gap:30px;justify-content:center}
+  }
+</style>
+</head>
+<body>
+<!-- ============ svg symbol library ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-cloudoff" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M4 3.5l16 17"/></symbol>
+    <symbol id="i-gps" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.4"/><path d="M12 2.2v3.3M12 18.5v3.3M2.2 12h3.3M18.5 12h3.3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-3.6-3.6"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 1.8"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+<header class="doc">
+  <div class="eyebrow">Design specification · v1.0 · Aug 2026</div>
+  <h1>Upcoming Weather <small>— Android forecast app</small></h1>
+  <div class="meta">
+    <span>Kotlin</span><span>Jetpack Compose</span><span>M3 roles · noir skin</span>
+    <span>Clean Architecture</span><span>OpenWeatherMap · free tier</span><span>360 × 800 dp reference</span>
+  </div>
+  <p class="lead">Everything on this page is stated in the units you will type into Compose:
+  <b>dp</b> for dimensions, <b>sp</b> for type, hex for color. In the phone mockups,
+  <b>1&nbsp;CSS&nbsp;px&nbsp;=&nbsp;1&nbsp;dp</b> at a 360&nbsp;dp reference width, so anything you
+  measure in the browser is the value to implement. Covers the app's four core features:
+  today's forecast, weekly forecast, current-location city, and free city search.</p>
+</header>
+
+<nav class="toc">
+  <a href="#screens">Screens</a><a href="#tokens">Design tokens</a>
+  <a href="#components">Components</a><a href="#behavior">Behavior &amp; states</a>
+  <a href="#data">Data mapping</a><a href="#arch">Architecture</a>
+  <a href="#a11y">Accessibility &amp; motion</a><a href="#decisions">Decisions log</a>
+</nav>
+
+<!-- ================= SCREENS ================= -->
+<section id="screens">
+  <div class="eyebrow">01 · Screens</div>
+  <h2>Three destinations, nine rendered states</h2>
+  <p class="lead">A single-activity app with three destinations:
+  <span class="m">forecast</span> (start), <span class="m">search</span>, and <span class="m">day/{date}</span>. The forecast screen is
+  one vertical scroll — hero, 3-hour strip, readings ledger, 5-day list —
+  so "today" and "week" live in the same scroll. Five days is the maximum
+  available from OpenWeatherMap's free tier; the day list is aggregated client-side from 3-hour slots
+  (§&nbsp;Data mapping), and the row component accepts 5–7 entries.</p>
+
+  <div class="shots">
+    <!-- ===== Frame A: forecast light, annotated ===== -->
+    <div class="shot">
+      <div class="anno">
+        <span class="dot" style="top:46px">1</span>
+        <span class="dot" style="top:150px">2</span>
+        <span class="dot" style="top:320px">3</span>
+        <span class="dot" style="top:392px">4</span>
+        <span class="dot" style="top:530px">5</span>
+        <span class="dot" style="top:800px">6</span>
+        <span class="dot" style="top:968px">7</span>
+        <div class="frame light">
+          <div class="statusbar"><span>10:24</span><span class="sb-r">5G ▮▮▮▯ 82%</span></div>
+          <div class="appbar">
+            <button class="iconbtn"><svg><use href="#i-gps"/></svg></button>
+            <div class="title">Budapest</div>
+            <button class="iconbtn"><svg><use href="#i-search"/></svg></button>
+          </div>
+          <div class="body16">
+            <div class="hero">
+              <div class="hero-top">
+                <div>
+                  <div class="temp">27°</div>
+                  <div class="stamp ink-partly">Partly cloudy</div>
+                  <div class="cond">Clouds circle like old regrets.</div>
+                  <div class="hmeta">Felt like 29°&nbsp;&nbsp;·&nbsp;&nbsp;<b>H 29°&nbsp; L 19°</b></div>
+                </div>
+                <div class="hero-glyph ink-partly">(*)</div>
+              </div>
+              <div class="hero-upd">The trail was warm at <b>10:12</b></div>
+            </div>
+
+            <div class="sh">From now on</div>
+            <div class="chiprow">
+              <div class="chip"><span class="c-t">Now</span><span class="wg ink-partly">(*)</span><span class="c-temp">27°</span><span class="c-p"></span></div>
+              <div class="chip"><span class="c-t">12:00</span><span class="wg ink-clear">*</span><span class="c-temp">28°</span><span class="c-p"></span></div>
+              <div class="chip"><span class="c-t">15:00</span><span class="wg ink-clear">*</span><span class="c-temp">28°</span><span class="c-p"></span></div>
+              <div class="chip"><span class="c-t">18:00</span><span class="wg ink-partly">(*)</span><span class="c-temp">26°</span><span class="c-p">10%</span></div>
+              <div class="chip"><span class="c-t">21:00</span><span class="wg ink-night">)</span><span class="c-temp">22°</span><span class="c-p"></span></div>
+              <div class="chip"><span class="c-t">00:00</span><span class="wg ink-night">)</span><span class="c-temp">21°</span><span class="c-p"></span></div>
+              <div class="chip"><span class="c-t">03:00</span><span class="wg ink-night">)</span><span class="c-temp">19°</span><span class="c-p"></span></div>
+              <div class="chip"><span class="c-t">06:00</span><span class="wg ink-clear">*</span><span class="c-temp">19°</span><span class="c-p"></span></div>
+              <div class="chip"><span class="c-t">09:00</span><span class="wg ink-clear">*</span><span class="c-temp">24°</span><span class="c-p"></span></div>
+            </div>
+
+            <div class="ledger">
+            <div class="rdg"><div class="rdg-l"><span>HUMIDITY</span><span class="dots"></span><span class="rdg-v">46%</span></div><div class="rdg-s">clouds packing 40%</div></div>
+            <div class="rdg"><div class="rdg-l"><span>WIND</span><span class="dots"></span><span class="rdg-v">12 km/h</span></div><div class="rdg-s">gusts of 26, no warning</div></div>
+            <div class="rdg"><div class="rdg-l"><span>SUNRISE</span><span class="dots"></span><span class="rdg-v">05:31</span></div><div class="rdg-s">dark again by 20:14</div></div>
+            <div class="rdg"><div class="rdg-l"><span>PRESSURE</span><span class="dots"></span><span class="rdg-v">1014 hPa</span></div><div class="rdg-s">1010 hPa on the street</div></div>
+          </div>
+
+            <div class="sh">Five days into the dark</div>
+            <div class="week">
+              <div class="day"><span class="d-name">Today</span><span class="wg ink-partly">(*)</span><span class="d-p">10%</span><span class="d-min">19°</span><span class="range"><span class="rt">..</span><span class="rf">========</span><span class="rt">...</span></span><span class="d-max">29°</span><span class="d-go">&gt;</span></div>
+              <div class="day"><span class="d-name">Wed</span><span class="wg ink-clear">*</span><span class="d-p"></span><span class="d-min">20°</span><span class="range"><span class="rt">...</span><span class="rf">=========</span><span class="rt">.</span></span><span class="d-max">31°</span><span class="d-go">&gt;</span></div>
+              <div class="day"><span class="d-name">Thu</span><span class="wg ink-clear">*</span><span class="d-p">20%</span><span class="d-min">21°</span><span class="range"><span class="rt">....</span><span class="rf">=========</span></span><span class="d-max">32°</span><span class="d-go">&gt;</span></div>
+              <div class="day"><span class="d-name">Fri</span><span class="wg ink-rain">///</span><span class="d-p">60%</span><span class="d-min">18°</span><span class="range"><span class="rt">..</span><span class="rf">=======</span><span class="rt">....</span></span><span class="d-max">27°</span><span class="d-go">&gt;</span></div>
+              <div class="day"><span class="d-name">Sat</span><span class="wg ink-rain">///</span><span class="d-p">80%</span><span class="d-min">16°</span><span class="range"><span class="rf">=======</span><span class="rt">......</span></span><span class="d-max">24°</span><span class="d-go">&gt;</span></div>
+            </div>
+            <div class="attrib">Data by OpenWeather — I just read the signs.</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap">A · Forecast — day (gritty paper), full scroll captured (viewport is 360 × 800 dp)</div>
+    </div>
+
+    <!-- legend -->
+    <div class="legend">
+      <h3 style="margin-top:8px">Callouts</h3>
+      <table class="t">
+        <tr><td>1</td><td><b>Top app bar</b> — 64 dp, center-aligned Material top app bar, surface = screen background (no elevation). Leading: my-location icon button 48 dp. Title: status line (city name, cityTitle 18 sp Bold; collapsed appends <span class="m">· N°</span>); not a control — search lives in the trailing icon.</td></tr>
+        <tr><td>2</td><td><b>Hero block</b> — no card: typed straight onto the background, 16 dp side margins. Temp 72 sp onSurface · condition <b>stamp</b> (semantic label, 12 sp Bold UPPERCASE, 1.5 dp border, −2° tilt, condition ink) · noir line 16 sp italic onSurface · meta 12 sp onSurfaceVariant with H/L Bold · typed glyph 44 sp in the same ink · timestamp 11 sp onSurfaceVariant, time Bold, end-aligned. Collapses into the app bar on scroll (§ Behavior).</td></tr>
+        <tr><td>3</td><td><b>Section header</b> — titleMedium 16 sp Medium, 24 dp above, 12 dp below.</td></tr>
+        <tr><td>4</td><td><b>Time strip</b> — horizontal scroll, 9 items = "Now" (from <span class="m">/weather</span>) + the next 8 slots of <span class="m">/forecast</span> in the free tier's 3-hour steps. Columns are bare, 16 dp apart, split by typed pipe dividers; contentPadding 16 dp, edge-to-edge bleed.</td></tr>
+        <tr><td>5</td><td><b>Readings ledger</b> — typed dot-leader rows (label · leader · value, noir sub indented 16 dp), no container. Sourced from the current-conditions call.</td></tr>
+        <tr><td>6</td><td><b>5-day list</b> — no card — rows 52 dp bare on the background, 1 dp hairline dividers, trailing typed <span class="m">&gt;</span> opens the day's details. Each row is a day <i>aggregated from 3-hour slots</i> in the data layer (§ Data mapping). The typed range bar (dots + <span class="m">=</span> in primary) shows the day's min–max inside the 5-day span (§ Components for the math and grid quantization).</td></tr>
+        <tr><td>7</td><td><b>Attribution</b> — labelSmall 11 sp onSurfaceVariant, centered, 24 dp bottom padding. OpenWeather's terms ask for attribution.</td></tr>
+      </table>
+      <div class="note"><b>Pull-to-refresh</b> (Material 3) wraps the whole scroll. The hero is typed content with no container and <b>exits-until-collapsed</b>: once it scrolls out, the pinned app-bar title appends the current temperature (<span class="m">Budapest · 27°</span>).</div>
+    </div>
+  </div>
+
+  <div class="shots">
+    <!-- ===== Frame B: forecast dark ===== -->
+    <div class="shot">
+      <div class="frame dark">
+        <div class="statusbar"><span>22:47</span><span class="sb-r">5G ▮▮▮▯ 64%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-gps"/></svg></button>
+          <div class="title">Budapest</div>
+          <button class="iconbtn"><svg><use href="#i-search"/></svg></button>
+        </div>
+        <div class="body16">
+          <div class="hero">
+            <div class="hero-top">
+              <div>
+                <div class="temp">22°</div>
+                <div class="stamp ink-night">Clear</div>
+                <div class="cond">The night held its breath.</div>
+                <div class="hmeta">Felt like 21°&nbsp;&nbsp;·&nbsp;&nbsp;<b>H 29°&nbsp; L 19°</b></div>
+              </div>
+              <div class="hero-glyph ink-night">)</div>
+            </div>
+            <div class="hero-upd">The trail was warm at <b>22:41</b></div>
+          </div>
+
+          <div class="sh">From now on</div>
+          <div class="chiprow">
+            <div class="chip"><span class="c-t">Now</span><span class="wg ink-night">)</span><span class="c-temp">22°</span><span class="c-p"></span></div>
+            <div class="chip"><span class="c-t">00:00</span><span class="wg ink-night">)</span><span class="c-temp">21°</span><span class="c-p"></span></div>
+            <div class="chip"><span class="c-t">03:00</span><span class="wg ink-night">)</span><span class="c-temp">19°</span><span class="c-p"></span></div>
+            <div class="chip"><span class="c-t">06:00</span><span class="wg ink-clear">*</span><span class="c-temp">19°</span><span class="c-p"></span></div>
+            <div class="chip"><span class="c-t">09:00</span><span class="wg ink-clear">*</span><span class="c-temp">24°</span><span class="c-p"></span></div>
+            <div class="chip"><span class="c-t">12:00</span><span class="wg ink-clear">*</span><span class="c-temp">28°</span><span class="c-p"></span></div>
+            <div class="chip"><span class="c-t">15:00</span><span class="wg ink-partly">(*)</span><span class="c-temp">28°</span><span class="c-p">10%</span></div>
+            <div class="chip"><span class="c-t">18:00</span><span class="wg ink-partly">(*)</span><span class="c-temp">26°</span><span class="c-p"></span></div>
+          </div>
+
+          <div class="ledger">
+            <div class="rdg"><div class="rdg-l"><span>HUMIDITY</span><span class="dots"></span><span class="rdg-v">62%</span></div><div class="rdg-s">clouds packing 10%</div></div>
+            <div class="rdg"><div class="rdg-l"><span>WIND</span><span class="dots"></span><span class="rdg-v">8 km/h</span></div><div class="rdg-s">gusts of 14, no warning</div></div>
+            <div class="rdg"><div class="rdg-l"><span>SUNRISE</span><span class="dots"></span><span class="rdg-v">05:31</span></div><div class="rdg-s">dark again by 20:14</div></div>
+            <div class="rdg"><div class="rdg-l"><span>PRESSURE</span><span class="dots"></span><span class="rdg-v">1016 hPa</span></div><div class="rdg-s">1002 hPa on the street</div></div>
+          </div>
+
+          <div class="sh">Five days into the dark</div>
+          <div class="week">
+            <div class="day"><span class="d-name">Today</span><span class="wg ink-partly">(*)</span><span class="d-p">10%</span><span class="d-min">19°</span><span class="range"><span class="rt">..</span><span class="rf">========</span><span class="rt">...</span></span><span class="d-max">29°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Wed</span><span class="wg ink-clear">*</span><span class="d-p"></span><span class="d-min">20°</span><span class="range"><span class="rt">...</span><span class="rf">=========</span><span class="rt">.</span></span><span class="d-max">31°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Thu</span><span class="wg ink-clear">*</span><span class="d-p">20%</span><span class="d-min">21°</span><span class="range"><span class="rt">....</span><span class="rf">=========</span></span><span class="d-max">32°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Fri</span><span class="wg ink-rain">///</span><span class="d-p">60%</span><span class="d-min">18°</span><span class="range"><span class="rt">..</span><span class="rf">=======</span><span class="rt">....</span></span><span class="d-max">27°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Sat</span><span class="wg ink-rain">///</span><span class="d-p">80%</span><span class="d-min">16°</span><span class="range"><span class="rf">=======</span><span class="rt">......</span></span><span class="d-max">24°</span><span class="d-go">&gt;</span></div>
+          </div>
+          <div class="attrib">Data by OpenWeather — I just read the signs.</div>
+        </div>
+      </div>
+      <div class="cap">B · Forecast — night, the native mood. Grain and layout are shared; the stamp switches to its night-grade ink (§ 02).</div>
+    </div>
+
+    <!-- ===== Frame C: city search ===== -->
+    <div class="shot">
+      <div class="frame light" style="min-height:720px">
+        <div class="statusbar"><span>10:25</span><span class="sb-r">5G ▮▮▮▯ 82%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-back"/></svg></button>
+          <div class="sfield"><svg><use href="#i-search"/></svg><span class="q">san<span class="caretbar"></span></span><svg><use href="#i-close"/></svg></div>
+        </div>
+        <div class="body16">
+          <div class="lrow loc"><svg><use href="#i-gps"/></svg><div class="l1">Trace my steps</div></div>
+          <div class="ldiv"></div>
+          <div class="lrow" style="padding-left:8px"><div><div class="l1">San Francisco</div><div class="l2">California, United States</div></div></div>
+          <div class="lrow" style="padding-left:8px"><div><div class="l1">San Salvador</div><div class="l2">El Salvador</div></div></div>
+          <div class="lrow" style="padding-left:8px"><div><div class="l1">San Sebastián</div><div class="l2">Basque Country, Spain</div></div></div>
+          <div class="lrow" style="padding-left:8px"><div><div class="l1">Sanaa</div><div class="l2">Yemen</div></div></div>
+          <div class="lrow" style="padding-left:8px"><div><div class="l1">Sandnes</div><div class="l2">Rogaland, Norway</div></div></div>
+        </div>
+      </div>
+      <div class="cap">C · City search — OWM geocoding (<span class="m">/geo/1.0/direct</span>, limit 10), 300 ms debounce, min 2 chars. Empty query shows a "Cold cases" header + up to 5 stored rows with a clock icon.</div>
+    </div>
+
+    <!-- ===== Frame D: loading skeleton ===== -->
+    <div class="shot">
+      <div class="frame light">
+        <div class="statusbar"><span>10:24</span><span class="sb-r">5G ▮▮▮▯ 82%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-gps"/></svg></button>
+          <div class="title">Budapest</div>
+          <button class="iconbtn"><svg><use href="#i-search"/></svg></button>
+        </div>
+        <div class="body16">
+          <div style="padding:14px 4px 2px">
+            <div style="font-size:72px;line-height:1;color:var(--on-var);opacity:.5;font-weight:400;letter-spacing:-1px"><span class="caret" style="width:44px;height:54px;vertical-align:-7px;margin-right:2px"></span>°</div>
+            <div class="tsk" style="margin-top:18px;opacity:.4">[ ------------ ]</div>
+            <div class="tsk" style="margin-top:12px;opacity:.28">......................</div>
+            <div class="tsk" style="margin-top:14px;opacity:.28">.............</div>
+          </div>
+          <div class="sh" style="opacity:.4">From now on</div>
+          <div class="tsk" style="margin-top:2px;font-size:14px;line-height:2.1;opacity:.38">
+            --:-- &nbsp;|&nbsp; --:-- &nbsp;|&nbsp; --:-- &nbsp;|&nbsp; --:--<br>
+            &nbsp;--° &nbsp;&nbsp;|&nbsp;&nbsp; --° &nbsp;&nbsp;|&nbsp;&nbsp; --° &nbsp;&nbsp;|&nbsp;&nbsp; --°
+          </div>
+          <div style="margin-top:22px">
+            <div class="tsk tsk-l" style="margin-top:13px">HUMIDITY ....................... --</div>
+            <div class="tsk tsk-l" style="margin-top:17px">WIND ........................... --</div>
+            <div class="tsk tsk-l" style="margin-top:17px">SUNRISE ........................ --</div>
+            <div class="tsk tsk-l" style="margin-top:17px">PRESSURE ....................... --</div>
+          </div>
+          <div class="sh" style="opacity:.4">Five days into the dark</div>
+          <div class="tsk" style="font-size:13px;line-height:2.3;margin-bottom:24px;opacity:.38">
+            --- &nbsp;&nbsp;....................<br>
+            --- &nbsp;&nbsp;....................<br>
+            --- &nbsp;&nbsp;....................<br>
+            --- &nbsp;&nbsp;....................<br>
+            --- &nbsp;&nbsp;....................
+          </div>
+        </div>
+      </div>
+      <div class="cap">D · First load (no cache) — the page types itself in: the cursor sits in the temperature slot — the frontier, where the first real value lands — with placeholders below it faded to show what is still coming. One block cursor, 530 ms. Nothing shimmers. With a cache, this never appears — content renders instantly and refresh is silent.</div>
+    </div>
+
+    <!-- ===== Frame E: error ===== -->
+    <div class="shot">
+      <div class="frame light" style="min-height:720px">
+        <div class="statusbar"><span>10:24</span><span class="sb-r">✕ ▮▯▯▯ 82%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-gps"/></svg></button>
+          <div class="title">Budapest</div>
+          <button class="iconbtn"><svg><use href="#i-search"/></svg></button>
+        </div>
+        <div class="staterr">
+          <div class="eg">(x)</div>
+          <div class="st-t">The forecast went dark.</div>
+          <div class="st-b">The wire's cut. Check your connection and we go again.</div>
+          <button class="btn">Run it again</button>
+          <button class="btn-text">name a city instead</button>
+        </div>
+      </div>
+      <div class="cap">E · Fetch failed with <b>no cache</b> — the only full-screen error. With a cache, the app shows content plus the offline banner (§ Components).</div>
+    </div>
+
+    <!-- ===== Frame F: first-launch empty state ===== -->
+    <div class="shot">
+      <div class="frame light" style="min-height:720px">
+        <div class="statusbar"><span>09:41</span><span class="sb-r">5G ▮▮▮▮ 100%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-gps"/></svg></button>
+          <div class="title">Upcoming Weather</div>
+          <button class="iconbtn"><svg><use href="#i-search"/></svg></button>
+        </div>
+        <div class="staterr">
+          <div class="eg">(?)</div>
+          <div class="st-t">No city. No case.</div>
+          <div class="st-b">Every case starts with a city. Name one, or let me trace your steps.</div>
+          <button class="btn">Trace my steps</button>
+          <button class="btn-text">name a city instead</button>
+        </div>
+      </div>
+      <div class="cap">F · First launch — no city selected yet. App-bar title falls back to the app name. "TRACE MY STEPS" runs the contextual permission flow; the quiet "name a city instead" opens search. Selection persists, so this state appears once.</div>
+    </div>
+
+    <!-- ===== Frame G: scrolled, hero collapsed ===== -->
+    <div class="shot">
+      <div class="frame light">
+        <div class="statusbar"><span>10:26</span><span class="sb-r">5G ▮▮▮▯ 82%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-gps"/></svg></button>
+          <div class="title">Budapest · 27°</div>
+          <button class="iconbtn"><svg><use href="#i-search"/></svg></button>
+        </div>
+        <div class="body16">
+          <div class="ledger">
+            <div class="rdg"><div class="rdg-l"><span>HUMIDITY</span><span class="dots"></span><span class="rdg-v">46%</span></div><div class="rdg-s">clouds packing 40%</div></div>
+            <div class="rdg"><div class="rdg-l"><span>WIND</span><span class="dots"></span><span class="rdg-v">12 km/h</span></div><div class="rdg-s">gusts of 26, no warning</div></div>
+            <div class="rdg"><div class="rdg-l"><span>SUNRISE</span><span class="dots"></span><span class="rdg-v">05:31</span></div><div class="rdg-s">dark again by 20:14</div></div>
+            <div class="rdg"><div class="rdg-l"><span>PRESSURE</span><span class="dots"></span><span class="rdg-v">1014 hPa</span></div><div class="rdg-s">1010 hPa on the street</div></div>
+          </div>
+          <div class="sh">Five days into the dark</div>
+          <div class="week">
+            <div class="day"><span class="d-name">Today</span><span class="wg ink-partly">(*)</span><span class="d-p">10%</span><span class="d-min">19°</span><span class="range"><span class="rt">..</span><span class="rf">========</span><span class="rt">...</span></span><span class="d-max">29°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Wed</span><span class="wg ink-clear">*</span><span class="d-p"></span><span class="d-min">20°</span><span class="range"><span class="rt">...</span><span class="rf">=========</span><span class="rt">.</span></span><span class="d-max">31°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Thu</span><span class="wg ink-clear">*</span><span class="d-p">20%</span><span class="d-min">21°</span><span class="range"><span class="rt">....</span><span class="rf">=========</span></span><span class="d-max">32°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Fri</span><span class="wg ink-rain">///</span><span class="d-p">60%</span><span class="d-min">18°</span><span class="range"><span class="rt">..</span><span class="rf">=======</span><span class="rt">....</span></span><span class="d-max">27°</span><span class="d-go">&gt;</span></div>
+            <div class="day"><span class="d-name">Sat</span><span class="wg ink-rain">///</span><span class="d-p">80%</span><span class="d-min">16°</span><span class="range"><span class="rf">=======</span><span class="rt">......</span></span><span class="d-max">24°</span><span class="d-go">&gt;</span></div>
+          </div>
+          <div class="attrib">Data by OpenWeather — I just read the signs.</div>
+        </div>
+      </div>
+      <div class="cap">G · Scrolled — the hero has exited; the pinned title carries "Budapest · 27°" until the user returns to top. Same list content, mid-scroll viewport.</div>
+    </div>
+
+    <!-- ===== Frame H: day details screen ===== -->
+    <div class="shot">
+      <div class="frame light">
+        <div class="statusbar"><span>10:27</span><span class="sb-r">5G ▮▮▮▯ 82%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-back"/></svg></button>
+          <div class="title">Friday · Aug 7</div>
+          <span style="width:48px"></span>
+        </div>
+        <div class="body16">
+          <div class="hero">
+            <div class="hero-top">
+              <div>
+                <div class="temp">27°</div>
+                <div class="stamp ink-rain">Rain</div>
+                <div class="cond">Bloody awful rain, cold as a debt.</div>
+                <div class="hmeta"><b>H 27°&nbsp; L 18°</b></div>
+              </div>
+              <div class="hero-glyph ink-rain">///</div>
+            </div>
+            <div class="hero-upd">The trail was warm at <b>10:12</b></div>
+          </div>
+
+          <div class="sh">Friday, step by step</div>
+          <div>
+            <div class="slot"><span class="s-t">00:00</span><span class="wg ink-night">)</span><span class="s-p"></span><span class="range"><span class="rt">...</span><span class="rf">+</span><span class="rt">....................</span></span><span class="s-v">19°</span></div>
+            <div class="slot"><span class="s-t">03:00</span><span class="wg ink-rain">///</span><span class="s-p">30%</span><span class="range"><span class="rf">+</span><span class="rt">.......................</span></span><span class="s-v">18°</span></div>
+            <div class="slot"><span class="s-t">06:00</span><span class="wg ink-rain">///</span><span class="s-p">55%</span><span class="range"><span class="rf">+</span><span class="rt">.......................</span></span><span class="s-v">18°</span></div>
+            <div class="slot"><span class="s-t">09:00</span><span class="wg ink-rain">///</span><span class="s-p">60%</span><span class="range"><span class="rt">.....</span><span class="rf">+</span><span class="rt">..................</span></span><span class="s-v">20°</span></div>
+            <div class="slot"><span class="s-t">12:00</span><span class="wg ink-rain">///</span><span class="s-p">60%</span><span class="range"><span class="rt">.............</span><span class="rf">+</span><span class="rt">..........</span></span><span class="s-v">23°</span></div>
+            <div class="slot"><span class="s-t">15:00</span><span class="wg ink-partly">(*)</span><span class="s-p">35%</span><span class="range"><span class="rt">....................</span><span class="rf">+</span><span class="rt">...</span></span><span class="s-v">26°</span></div>
+            <div class="slot"><span class="s-t">18:00</span><span class="wg ink-partly">(*)</span><span class="s-p"></span><span class="range"><span class="rt">..................</span><span class="rf">+</span><span class="rt">.....</span></span><span class="s-v">25°</span></div>
+            <div class="slot"><span class="s-t">21:00</span><span class="wg ink-night">)</span><span class="s-p"></span><span class="range"><span class="rt">........</span><span class="rf">+</span><span class="rt">...............</span></span><span class="s-v">21°</span></div>
+          </div>
+
+          <div class="ledger">
+            <div class="rdg"><div class="rdg-l"><span>HUMIDITY</span><span class="dots"></span><span class="rdg-v">74%</span></div><div class="rdg-s">clouds packing 90%</div></div>
+            <div class="rdg"><div class="rdg-l"><span>WIND</span><span class="dots"></span><span class="rdg-v">18 km/h</span></div><div class="rdg-s">gusts of 34, no warning</div></div>
+            <div class="rdg"><div class="rdg-l"><span>PRECIP</span><span class="dots"></span><span class="rdg-v">60%</span></div><div class="rdg-s">4.2 mm on the books</div></div>
+            <div class="rdg"><div class="rdg-l"><span>PRESSURE</span><span class="dots"></span><span class="rdg-v">1004 hPa</span></div><div class="rdg-s">1000 hPa on the street</div></div>
+          </div>
+          <div class="attrib">Data by OpenWeather — I just read the signs.</div>
+        </div>
+      </div>
+      <div class="cap">H · Day details (<span class="m">day/{date}</span>) — back arrow, day-variant hero, the typed day log with each slot's temperature marked inside the day's span, then the details ledger. No fetch: rendered from the cached forecast, so it opens instantly and works offline.</div>
+    </div>
+
+    <!-- ===== Frame I: day details, night ===== -->
+    <div class="shot">
+      <div class="frame dark">
+        <div class="statusbar"><span>22:48</span><span class="sb-r">5G ▮▮▮▯ 64%</span></div>
+        <div class="appbar">
+          <button class="iconbtn"><svg><use href="#i-back"/></svg></button>
+          <div class="title">Friday · Aug 7</div>
+          <span style="width:48px"></span>
+        </div>
+        <div class="body16">
+          <div class="hero">
+            <div class="hero-top">
+              <div>
+                <div class="temp">27°</div>
+                <div class="stamp ink-rain">Rain</div>
+                <div class="cond">Bloody awful rain, cold as a debt.</div>
+                <div class="hmeta"><b>H 27°&nbsp; L 18°</b></div>
+              </div>
+              <div class="hero-glyph ink-rain">///</div>
+            </div>
+            <div class="hero-upd">The trail was warm at <b>10:12</b></div>
+          </div>
+
+          <div class="sh">Friday, step by step</div>
+          <div>
+            <div class="slot"><span class="s-t">00:00</span><span class="wg ink-night">)</span><span class="s-p"></span><span class="range"><span class="rt">...</span><span class="rf">+</span><span class="rt">....................</span></span><span class="s-v">19°</span></div>
+            <div class="slot"><span class="s-t">03:00</span><span class="wg ink-rain">///</span><span class="s-p">30%</span><span class="range"><span class="rf">+</span><span class="rt">.......................</span></span><span class="s-v">18°</span></div>
+            <div class="slot"><span class="s-t">06:00</span><span class="wg ink-rain">///</span><span class="s-p">55%</span><span class="range"><span class="rf">+</span><span class="rt">.......................</span></span><span class="s-v">18°</span></div>
+            <div class="slot"><span class="s-t">09:00</span><span class="wg ink-rain">///</span><span class="s-p">60%</span><span class="range"><span class="rt">.....</span><span class="rf">+</span><span class="rt">..................</span></span><span class="s-v">20°</span></div>
+            <div class="slot"><span class="s-t">12:00</span><span class="wg ink-rain">///</span><span class="s-p">60%</span><span class="range"><span class="rt">.............</span><span class="rf">+</span><span class="rt">..........</span></span><span class="s-v">23°</span></div>
+            <div class="slot"><span class="s-t">15:00</span><span class="wg ink-partly">(*)</span><span class="s-p">35%</span><span class="range"><span class="rt">....................</span><span class="rf">+</span><span class="rt">...</span></span><span class="s-v">26°</span></div>
+            <div class="slot"><span class="s-t">18:00</span><span class="wg ink-partly">(*)</span><span class="s-p"></span><span class="range"><span class="rt">..................</span><span class="rf">+</span><span class="rt">.....</span></span><span class="s-v">25°</span></div>
+            <div class="slot"><span class="s-t">21:00</span><span class="wg ink-night">)</span><span class="s-p"></span><span class="range"><span class="rt">........</span><span class="rf">+</span><span class="rt">...............</span></span><span class="s-v">21°</span></div>
+          </div>
+
+          <div class="ledger">
+            <div class="rdg"><div class="rdg-l"><span>HUMIDITY</span><span class="dots"></span><span class="rdg-v">74%</span></div><div class="rdg-s">clouds packing 90%</div></div>
+            <div class="rdg"><div class="rdg-l"><span>WIND</span><span class="dots"></span><span class="rdg-v">18 km/h</span></div><div class="rdg-s">gusts of 34, no warning</div></div>
+            <div class="rdg"><div class="rdg-l"><span>PRECIP</span><span class="dots"></span><span class="rdg-v">60%</span></div><div class="rdg-s">4.2 mm on the books</div></div>
+            <div class="rdg"><div class="rdg-l"><span>PRESSURE</span><span class="dots"></span><span class="rdg-v">1004 hPa</span></div><div class="rdg-s">1000 hPa on the street</div></div>
+          </div>
+          <div class="attrib">Data by OpenWeather — I just read the signs.</div>
+        </div>
+      </div>
+      <div class="cap">I · Day details — night. Same screen, same data; the stamp, glyphs and markers switch to their night-grade inks (§ 02), grain and layout shared.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TOKENS ================= -->
+<section id="tokens">
+  <div class="eyebrow">02 · Design tokens</div>
+  <h2>Noir tokens: color, type, shape, grain</h2>
+  <p class="lead">One fixed pair of schemes — night and day — selected by the system dark-mode flag. No dynamic
+  color. Every mockup on this page renders these exact values. The UI consumes only the roles listed
+  here; components reference roles, never raw hex.</p>
+
+  <h3>Material 3 roles consumed</h3>
+  <table class="t">
+    <tr><th>Role</th><th>Used for</th><th>Night · native</th><th>Day · gritty paper</th></tr>
+    <tr><td class="m">background</td><td>Screen background</td><td><span class="sw" style="background:#0B0E13"></span><span class="m">#0B0E13</span></td><td><span class="sw" style="background:#E2DFD7"></span><span class="m">#E2DFD7</span></td></tr>
+    <tr><td class="m">surface</td><td>Search field and offline banner — the only filled containers</td><td><span class="sw" style="background:#12161D"></span><span class="m">#12161D</span></td><td><span class="sw" style="background:#EDEAE1"></span><span class="m">#EDEAE1</span></td></tr>
+    <tr><td class="m">surfaceContainerHighest</td><td>Search field, offline banner</td><td><span class="sw" style="background:#1B212B"></span><span class="m">#1B212B</span></td><td><span class="sw" style="background:#D6D2C6"></span><span class="m">#D6D2C6</span></td></tr>
+    <tr><td class="m">onSurface</td><td>Primary text (lamplight white / warm ink)</td><td><span class="sw" style="background:#E8E6DF"></span><span class="m">#E8E6DF</span></td><td><span class="sw" style="background:#191813"></span><span class="m">#191813</span></td></tr>
+    <tr><td class="m">onSurfaceVariant</td><td>Secondary text, neutral icons, hour labels</td><td><span class="sw" style="background:#98A0AD"></span><span class="m">#98A0AD</span></td><td><span class="sw" style="background:#625E52"></span><span class="m">#625E52</span></td></tr>
+    <tr><td class="m">outlineVariant</td><td>Dividers and the 1 dp panel strokes</td><td><span class="sw" style="background:#2E3542"></span><span class="m">#2E3542</span></td><td><span class="sw" style="background:#C4C0B3"></span><span class="m">#C4C0B3</span></td></tr>
+    <tr><td class="m">primary</td><td>Sodium amber — primary actions, "Trace my steps" row, range fill</td><td><span class="sw" style="background:#E0A458"></span><span class="m">#E0A458</span></td><td><span class="sw" style="background:#8A5510"></span><span class="m">#8A5510</span></td></tr>
+    <tr><td class="m">onPrimary</td><td>Filled-button label</td><td><span class="sw" style="background:#241503"></span><span class="m">#241503</span></td><td><span class="sw" style="background:#F6EFDF"></span><span class="m">#F6EFDF</span></td></tr>
+    <tr><td class="m">precip <span class="mut">(custom)</span></td><td>Precip % on hour columns and day rows; separate from <span class="m">primary</span>, which marks interactive elements</td><td><span class="sw" style="background:#7FA3C9"></span><span class="m">#7FA3C9</span></td><td><span class="sw" style="background:#3E6C99"></span><span class="m">#3E6C99</span></td></tr>
+  </table>
+
+  <h3>Condition stamp inks — eight hues, day and night grades</h3>
+  <p class="mut" style="font-size:13.5px;max-width:82ch;margin-top:6px">These inks apply to two elements
+  only: the condition <b>stamp</b> and the condition glyph. Steel is reserved for precipitation and is
+  used by no other condition; overcast matches <span class="m">onSurfaceVariant</span> exactly. Each ink
+  meets ≥ 4.5:1 against its own theme's background.</p>
+  <table class="t">
+    <tr><th>Token</th><th>Condition</th><th>Day grade</th><th>Night grade</th></tr>
+    <tr><td class="m">ink-clear</td><td>Clear, daytime — sodium sun</td><td><span class="sw" style="background:#8F5B0E"></span><span class="m">#8F5B0E</span></td><td><span class="sw" style="background:#D9A050"></span><span class="m">#D9A050</span></td></tr>
+    <tr><td class="m">ink-night</td><td>Clear, night — moon steel</td><td><span class="sw" style="background:#4E6480"></span><span class="m">#4E6480</span></td><td><span class="sw" style="background:#8FA3C0"></span><span class="m">#8FA3C0</span></td></tr>
+    <tr><td class="m">ink-partly</td><td>Partly cloudy — grey-sage</td><td><span class="sw" style="background:#5A665C"></span><span class="m">#5A665C</span></td><td><span class="sw" style="background:#9AA89E"></span><span class="m">#9AA89E</span></td></tr>
+    <tr><td class="m">ink-overcast</td><td>Overcast — graphite (= onSurfaceVariant)</td><td><span class="sw" style="background:#5A5F68"></span><span class="m">#5A5F68</span></td><td><span class="sw" style="background:#98A0AD"></span><span class="m">#98A0AD</span></td></tr>
+    <tr><td class="m">ink-fog</td><td>Fog / mist — warm putty</td><td><span class="sw" style="background:#6E6754"></span><span class="m">#6E6754</span></td><td><span class="sw" style="background:#A8A092"></span><span class="m">#A8A092</span></td></tr>
+    <tr><td class="m">ink-rain</td><td>Rain &amp; drizzle — steel (= precip accent)</td><td><span class="sw" style="background:#3E6C99"></span><span class="m">#3E6C99</span></td><td><span class="sw" style="background:#7FA3C9"></span><span class="m">#7FA3C9</span></td></tr>
+    <tr><td class="m">ink-snow</td><td>Snow — teal ice</td><td><span class="sw" style="background:#37707A"></span><span class="m">#37707A</span></td><td><span class="sw" style="background:#86BFC6"></span><span class="m">#86BFC6</span></td></tr>
+    <tr><td class="m">ink-thunder</td><td>Thunderstorm — rust</td><td><span class="sw" style="background:#9C4A32"></span><span class="m">#9C4A32</span></td><td><span class="sw" style="background:#C96A4C"></span><span class="m">#C96A4C</span></td></tr>
+  </table>
+
+  
+  <p class="mut" style="font-size:13.5px">Weather carries no icon-tint tokens: every condition glyph is a Courier character colored by its condition ink (below). Precip % pairs the <span class="m">precip</span> accent with the day's glyph, so color is never the only channel.</p>
+
+  <h3>Type scale — Courier Prime, one family (Regular · Bold · Italic)</h3>
+  <p class="mut" style="font-size:13.5px;margin-top:6px">Courier Prime (OFL) is bundled in
+  <span class="m">core:designsystem</span>. Monospace: numbers column-align without manual alignment, and
+  glyph width is fixed, so long strings wrap — reading subs to two lines, hero line to two. Long city names
+  ellipsize in the app bar.</p>
+  <table class="t">
+    <tr><th>Token</th><th>Size / line</th><th>Style</th><th>Used for</th></tr>
+    <tr><td class="m">tempDisplay</td><td>72 / 76 sp</td><td>Regular</td><td>Hero temperature — stamped, not elegant</td></tr>
+    <tr><td class="m">cityTitle</td><td>18 / 24 sp</td><td>Bold</td><td>App-bar city name (ellipsize)</td></tr>
+    <tr><td class="m">sectionStamp</td><td>13 / 16 sp</td><td>Bold · UPPERCASE · +8% tracking</td><td>Section headers, typed like report headings</td></tr>
+    <tr><td class="m">heroLine</td><td>16 / 22 sp</td><td>Italic</td><td>Condition hero line (wraps ≤ 2)</td></tr>
+    <tr><td class="m">conditionStamp</td><td>12 / 16 sp</td><td>Bold · UPPERCASE · +10% tracking</td><td>Semantic condition stamp — 1.5 dp border, −2° tilt</td></tr>
+    <tr><td class="m">weatherGlyph</td><td>44 · 16 · 14 sp</td><td>Bold</td><td>Typed condition glyph (hero · hour column · day row), colored by condition ink</td></tr>
+    <tr><td class="m">bodyLarge</td><td>16 / 24 sp</td><td>Regular</td><td>Day names, list rows, search input</td></tr>
+    <tr><td class="m">bodyMedium</td><td>14 / 20 sp</td><td>Regular</td><td>Secondary row text, min temps, error body</td></tr>
+    <tr><td class="m">labelLarge</td><td>14 / 20 sp</td><td>Bold</td><td>Primary actions (UPPERCASE, +9% tracking); hour-column &amp; max temps. Secondary actions: 14 sp Regular lowercase, onSurfaceVariant</td></tr>
+    <tr><td class="m">labelMedium</td><td>12 / 16 sp</td><td>Regular</td><td>Hour labels, reading subs, hero meta</td></tr>
+    <tr><td class="m">labelSmall</td><td>11 / 14 sp</td><td>Regular</td><td>Precip %, timestamp, attribution</td></tr>
+    <tr><td class="m">readingLabel</td><td>11 / 14 sp</td><td>Bold · UPPERCASE · +8% tracking</td><td>Ledger labels (HUMIDITY, WIND …)</td></tr>
+  </table>
+
+  <h3>Spacing, shape, elevation</h3>
+  <table class="t">
+    <tr><th>Axis</th><th>Values</th></tr>
+    <tr><td>Spacing (4-dp grid)</td><td><span class="m">4 · 8 · 12 · 16 · 20 · 24</span> — screen gutter 16, section gap 24, hour-column gap 16, reading block ~44 dp, list rows 52 / 48 dp</td></tr>
+    <tr><td>Corner radius</td><td><span class="m">4 dp</span> buttons, search field, banner — flat panels, no pills; readings, lists and the hour strip carry no container at all</td></tr>
+    <tr><td>Panel strokes</td><td>1 dp <span class="m">outlineVariant</span> on the search field and the banner only — every content surface sits bare on the background; the hero has no container, its stamp carries a 1.5 dp border</td></tr>
+    <tr><td>Film grain</td><td>Full-frame static fractal-noise overlay above all content — <span class="m">4%</span> night, <span class="m">5%</span> day; one tiled drawable at the root; never animated</td></tr>
+    <tr><td>Elevation</td><td><span class="m">0 dp everywhere</span> — separation comes from container colors, the M3 way; no shadows to fight in dark theme</td></tr>
+    <tr><td>Touch targets</td><td>≥ 48 dp: icon buttons 48, list rows 52–60, hour columns 64 wide, search field 48 in a 64 bar</td></tr>
+  </table>
+
+  <h3>Condition glyphs — the teletype set (zero image assets)</h3>
+  <p class="mut" style="font-size:13.5px;max-width:84ch;margin-top:6px">Nine Courier Bold characters, colored by
+  condition ink; no image assets. Sizes by slot: <span class="m">44 sp</span> hero ·
+  <span class="m">16 sp</span> hour column (28 dp slot) · <span class="m">14 sp</span> day row (24 dp slot).
+  At hour-column size, recognition depends on convention rather than pictorial detail.</p>
+  <div class="icons">
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#8F5B0E;width:36px">*</span><div>clear day<small>ink-clear</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#4E6480;width:36px">)</span><div>clear night<small>ink-night</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#5A665C;width:36px">(*)</span><div>partly cloudy<small>ink-partly</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#5A5F68;width:36px">(~)</span><div>overcast<small>ink-overcast</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#6E6754;width:36px">===</span><div>fog / mist<small>ink-fog</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#3E6C99;width:36px">//</span><div>drizzle<small>ink-rain</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#3E6C99;width:36px">///</span><div>rain<small>ink-rain</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#37707A;width:36px">***</span><div>snow<small>ink-snow</small></div></div>
+    <div class="icn"><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:20px;color:#9C4A32;width:36px">/!\</span><div>thunderstorm<small>ink-thunder</small></div></div>
+  </div>
+  <h3>Chrome — Material Symbols Sharp, 2 dp, butt caps</h3>
+  <p class="mut" style="font-size:13.5px;max-width:84ch;margin-top:6px">Navigation and action tools are
+  drawn glyphs: Material Symbols Sharp, square terminals, mitered joins, 2 dp stroke. This set is limited to
+  geometric tool icons; all weather and reading marks are typed.</p>
+  <div class="icons">
+    <div class="icn"><svg><use href="#i-gps"/></svg><div>my location<small>my_location</small></div></div>
+    <div class="icn"><svg><use href="#i-search"/></svg><div>search<small>search</small></div></div>
+    <div class="icn"><svg><use href="#i-back"/></svg><div>back<small>arrow_back</small></div></div>
+    <div class="icn"><svg><use href="#i-close"/></svg><div>clear<small>close</small></div></div>
+    <div class="icn"><svg><use href="#i-clock"/></svg><div>recent<small>schedule</small></div></div>
+    <div class="icn"><svg><use href="#i-cloudoff"/></svg><div>offline<small>cloud_off</small></div></div>
+  </div>
+</section>
+
+<!-- ================= COMPONENTS
+
+<!-- ================= COMPONENTS ================= -->
+<section id="components">
+  <div class="eyebrow">03 · Components</div>
+  <h2>Component specs with live samples</h2>
+  <p class="lead">Each component takes a plain UI model — no domain types, no ViewModel. Ownership follows
+  the placement rule in § 06: domain-free pieces sit in <span class="m">core:designsystem</span>, the rest with
+  their feature. Samples below render from the same tokens as the frames and are measurable at 1 px = 1 dp.</p>
+
+  <div class="comp">
+    <div class="demo dark"><div class="stage">
+      <div class="hero">
+        <div class="hero-top">
+          <div><div class="temp">17°</div>
+          <div class="stamp ink-rain">Rain</div>
+          <div class="cond">Bloody awful rain, cold as a debt.</div>
+          <div class="hmeta">Felt like 15°&nbsp;&nbsp;·&nbsp;&nbsp;<b>H 18°&nbsp; L 12°</b></div></div>
+          <div class="hero-glyph ink-rain">///</div>
+        </div>
+        <div class="hero-upd">The trail was warm at <b>08:03</b></div>
+      </div>
+      <div style="height:1px;background:var(--outline);margin:16px 0"></div>
+      <div class="appbar" style="border:1px solid var(--outline);border-radius:4px;background:var(--bg);height:56px">
+        <button class="iconbtn"><svg><use href="#i-gps"/></svg></button>
+        <div class="title">Budapest · 17°</div>
+        <button class="iconbtn"><svg><use href="#i-search"/></svg></button>
+      </div>
+      <div style="font-size:12px;color:var(--on-var);margin-top:8px">Collapsed — the block has scrolled away; the temp docks in the title.</div>
+    </div></div>
+    <div>
+      <h4>HeroBlock</h4>
+      <table class="t">
+        <tr><td>Layout</td><td>no container — typed directly on <span class="m">background</span> · padding 14 dp top, 4 dp sides (inside the 16 dp screen gutter) · min height ~176 dp expanded</td></tr>
+        <tr><td>Stamp</td><td>semantic condition, UPPERCASE 12 sp Bold, +10% tracking · 1.5 dp border in the condition ink · 2 dp radius · −2° tilt · 3×9 dp padding</td></tr>
+        <tr><td>Content</td><td>temp <span class="m">tempDisplay</span> onSurface · noir line <span class="m">heroLine</span> italic onSurface · meta <span class="m">labelMedium</span> onSurfaceVariant, H/L Bold · typed glyph at 44 sp Bold in the stamp's ink · timestamp <span class="m">labelSmall</span> onSurfaceVariant, time Bold</td></tr>
+        <tr><td>Collapse</td><td>exit-until-collapsed with the scroll · collapsed: block fully gone, pinned app-bar title reads "City · N°" (demo below) · expands back at top · pull-to-refresh works in both states</td></tr>
+        <tr><td>Data</td><td>dashboard: rounded current temp + feels-like · details day-variant: day max + H/L, no feels-like · both: semantic condition + noir line (copy deck), updatedAt</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="comp">
+    <div class="demo light"><div class="stage" style="display:flex;gap:16px;justify-content:center">
+      <div class="chip"><span class="c-t">15:00</span><span class="wg ink-clear">*</span><span class="c-temp">28°</span><span class="c-p"></span></div>
+      <div class="chip"><span class="c-t">18:00</span><span class="wg ink-partly">(*)</span><span class="c-temp">26°</span><span class="c-p">10%</span></div>
+      <div class="chip"><span class="c-t">21:00</span><span class="wg ink-night">)</span><span class="c-temp">22°</span><span class="c-p"></span></div>
+    </div></div>
+    <div>
+      <h4>HourColumn</h4>
+      <table class="t">
+        <tr><td>Column</td><td>64 × 104 dp · bare — no fill, no border · internal gap 3–4 dp, centered stack · 16 dp between columns</td></tr>
+        <tr><td>Divider</td><td>typed pipe between columns — a stack of four <span class="m">|</span> glyphs (12 sp, onSurfaceVariant @ 75%), ~92 dp tall, centered in the gap; an inset 1.5 dp hairline is the permitted drawn equivalent</td></tr>
+        <tr><td>Content</td><td>time <span class="m">labelMedium</span> onSurfaceVariant · typed glyph 16 sp Bold in the condition ink (28 dp slot) · temp <span class="m">labelLarge</span> · precip <span class="m">labelSmall</span> in the <span class="m">precip</span> accent, reserved 14 dp line when empty, so column heights match</td></tr>
+        <tr><td>Rules</td><td>first column = "Now" from <span class="m">/weather</span> · precip shown when pop ≥ 10% · times in the <i>city's</i> timezone, 24-h format</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="comp">
+    <div class="demo light"><div class="stage"><div class="ledger" style="margin-top:0">
+      <div class="rdg" style="padding-top:0"><div class="rdg-l"><span>HUMIDITY</span><span class="dots"></span><span class="rdg-v">46%</span></div><div class="rdg-s">clouds packing 40%</div></div>
+      <div class="rdg"><div class="rdg-l"><span>PRECIP</span><span class="dots"></span><span class="rdg-v">60%</span></div><div class="rdg-s">4.2 mm on the books</div></div>
+    </div></div></div>
+    <div>
+      <h4>ReadingRow (the ledger)</h4>
+      <table class="t">
+        <tr><td>Layout</td><td>no container — typed on the background · label <span class="m">readingLabel</span> + dot leader + value 16 sp Bold, one shared baseline · noir sub <span class="m">labelMedium</span> onSurfaceVariant, indented 16 dp · block ~44 dp, four readings ≈ 176 dp</td></tr>
+        <tr><td>Leader</td><td>dotted rule, 2 dp round dots @ 55% onSurfaceVariant, 8 dp clearance each side — typed periods, or a drawn dotted rule where the leader must fill an exact width</td></tr>
+        <tr><td>Dashboard set</td><td>HUMIDITY · WIND · SUNRISE · PRESSURE, from the current-conditions call</td></tr>
+        <tr><td>Details set</td><td>HUMIDITY (midday slot) · WIND (day max) · <b>PRECIP</b> (max pop, sub: total mm) · PRESSURE (midday) — SUNRISE is dashboard-only. This set applies to every day including Today</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="comp">
+    <div class="demo light"><div class="stage"><div class="week">
+      <div class="day"><span class="d-name">Thu</span><span class="wg ink-clear">*</span><span class="d-p">20%</span><span class="d-min">21°</span><span class="range"><span class="rt">....</span><span class="rf">=========</span></span><span class="d-max">32°</span><span class="d-go">&gt;</span></div>
+      <div class="day"><span class="d-name">Fri</span><span class="wg ink-rain">///</span><span class="d-p">60%</span><span class="d-min">18°</span><span class="range"><span class="rt">..</span><span class="rf">=======</span><span class="rt">....</span></span><span class="d-max">27°</span><span class="d-go">&gt;</span></div>
+      <div class="day"><span class="d-name">Sat</span><span class="wg ink-rain">///</span><span class="d-p">80%</span><span class="d-min">16°</span><span class="range"><span class="rf">=======</span><span class="rt">......</span></span><span class="d-max">24°</span><span class="d-go">&gt;</span></div>
+    </div></div></div>
+    <div>
+      <h4>DayRow + TempRangeBar</h4>
+      <table class="t">
+        <tr><td>Row</td><td>height 52 dp · gap 10 dp · bare on the background, no card · 1 dp <span class="m">outlineVariant</span> hairline between rows · trailing typed <span class="m">&gt;</span> 14 sp Bold onSurfaceVariant as the nav affordance</td></tr>
+        <tr><td>Cells</td><td>day 58 dp <span class="m">bodyLarge</span> ("Today", then Mon–Sun) · typed glyph 14 sp Bold (24 dp slot) · precip 32 dp <span class="m">labelSmall</span> primary (blank &lt; 10%) · min 30 dp <span class="m">bodyMedium</span> onSurfaceVariant · bar flex · max 32 dp <span class="m">labelLarge</span></td></tr>
+        <tr><td>Bar</td><td>typed — track of <span class="m">.</span> leaders, 10 sp Bold, onSurfaceVariant @ 50% · fill = a run of <span class="m">=</span> in primary · cell count fills the available width (≥ 12 cells)</td></tr>
+        <tr><td>Geometry</td><td>span = max(week max − week min, 1°) · fill start = (day min − week min) ⁄ span · fill width = (day max − day min) ⁄ span — then quantized to the character grid: cells = fraction × cell count, rounded, fill ≥ 1 cell</td></tr>
+        <tr><td>Tap</td><td>opens the <span class="m">day/{date}</span> details screen (§ Behavior); target = the full 52 dp row</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="comp">
+    <div class="demo light"><div class="stage">
+      <div class="sfield" style="margin-right:0"><svg><use href="#i-search"/></svg><span class="q">san<span class="caretbar"></span></span><svg><use href="#i-close"/></svg></div>
+      <div class="lrow loc" style="margin-top:8px"><svg><use href="#i-gps"/></svg><div class="l1">Trace my steps</div></div>
+      <div class="lrow"><svg><use href="#i-clock"/></svg><div><div class="l1">Budapest</div><div class="l2">Hungary</div></div></div>
+    </div></div>
+    <div>
+      <h4>SearchField, LocationRow, CityRow</h4>
+      <table class="t">
+        <tr><td>Field</td><td>48 dp flat field (radius 4, 1 dp stroke) in the 64 dp app bar · <span class="m">surfaceContainerHighest</span> · leading search 20 dp · input <span class="m">bodyLarge</span> · trailing clear appears when text ≠ empty · autofocus + IME on enter</td></tr>
+        <tr><td>Location row</td><td>60 dp · icon + label in <span class="m">primary</span>, Medium · always first, followed by 1 dp divider</td></tr>
+        <tr><td>City row</td><td>60 dp · name <span class="m">bodyLarge</span> · "state, country" <span class="m">bodyMedium</span> onSurfaceVariant (state omitted when API returns none) · recents get a clock icon, live results none</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="comp">
+    <div class="demo light"><div class="stage">
+      <div class="banner"><svg><use href="#i-cloudoff"/></svg><span><b>Offline</b> — cold trail from 09:12</span><button class="btn-text">Retry</button></div>
+    </div></div>
+    <div>
+      <h4>OfflineBanner</h4>
+      <table class="t">
+        <tr><td>Container</td><td>radius 4, 1 dp stroke · <span class="m">surfaceContainerHighest</span> · padding 10×12 dp · sits above the hero, 16 dp side margins, 8 dp gap below</td></tr>
+        <tr><td>Content</td><td>cloud-off 20 dp onSurfaceVariant · <span class="m">bodyMedium</span> text with time of cached fetch · trailing Retry text button, primary</td></tr>
+        <tr><td>Shown when</td><td>refresh failed but cache renders, or airplane-mode resume. Content stays fully interactive underneath.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Copy deck — one voice, every string</h3>
+  <p class="mut" style="font-size:13.5px;max-width:84ch;margin-top:6px">Voice: weather noir, narrating the sky as a case in progress, lightly past tense. Original pastiche only — no franchise names or quoted lines. The voice applies to display strings only: condition names remain semantic in code, and all accessibility strings are literal ("Rain, 18 to 27 degrees").</p>
+  <table class="t">
+    <tr><th>Condition</th><th>Hero line</th></tr>
+    <tr><td>Clear · day</td><td>A sky this clean is lying.</td></tr>
+    <tr><td>Clear · night</td><td>The night held its breath.</td></tr>
+    <tr><td>Partly cloudy</td><td>Clouds circle like old regrets.</td></tr>
+    <tr><td>Overcast</td><td>A disgusting grey lid on the city.</td></tr>
+    <tr><td>Fog / mist</td><td>Fog, hiding the city's evidence.</td></tr>
+    <tr><td>Drizzle</td><td>Drizzle, a slow confession.</td></tr>
+    <tr><td>Rain</td><td>Bloody awful rain, cold as a debt.</td></tr>
+    <tr><td>Snow</td><td>Snow falling like it had orders.</td></tr>
+    <tr><td>Thunderstorm</td><td>The sky turned blasphemous.</td></tr>
+  </table>
+  <table class="t">
+    <tr><th>Slot</th><th>String</th></tr>
+    <tr><td>Hero timestamp</td><td>The trail was warm at <b>HH:mm</b> — time Bold</td></tr>
+    <tr><td>Hero meta</td><td>Felt like N° · <b>H N° L N°</b> — H/L Bold, same color</td></tr>
+    <tr><td>Condition stamp</td><td>Semantic label, UPPERCASE — CLEAR · PARTLY CLOUDY · RAIN · … Literal, not voiced; the noir line below carries the voice.</td></tr>
+    <tr><td>Details title</td><td>{Weekday} · {Mon D} ("Friday · Aug 7"; Today: "Today · Aug 4")</td></tr>
+    <tr><td>Time-strip header (dashboard)</td><td>From now on</td></tr>
+    <tr><td>Day-log header (details)</td><td>{Weekday}, step by step ("Friday, step by step")</td></tr>
+    <tr><td>Day-list header</td><td>Five days into the dark</td></tr>
+    <tr><td>Attribution</td><td>Data by OpenWeather — I just read the signs.</td></tr>
+    <tr><td>Reading subs</td><td>clouds packing N% · gusts of N, no warning · dark again by HH:mm · N hPa on the street · N mm on the books (details)</td></tr>
+    <tr><td>Search placeholder</td><td>Name the city. I'll find it.</td></tr>
+    <tr><td>Location action (row + button)</td><td>Trace my steps</td></tr>
+    <tr><td>Recents header</td><td>Cold cases</td></tr>
+    <tr><td>Search: no results</td><td>No leads on '{query}'.</td></tr>
+    <tr><td>Search: error + retry</td><td>The search hit a wall. · Run it again</td></tr>
+    <tr><td>Error screen</td><td>The forecast went dark. · The wire's cut. Check your connection and we go again. · RUN IT AGAIN · name a city instead</td></tr>
+    <tr><td>Offline banner</td><td>Offline — cold trail from HH:mm · Retry (kept plain: width)</td></tr>
+    <tr><td>Empty state</td><td>No city. No case. · Every case starts with a city. Name one, or let me trace your steps. · TRACE MY STEPS · name a city instead</td></tr>
+    <tr><td>Snackbar: permission denied</td><td>The city won't give you up. Name it yourself. · action: Name it</td></tr>
+    <tr><td>Snackbar: location off</td><td>Location's gone dark. Flip it back on. · action: Settings</td></tr>
+  </table>
+  <p class="mut" style="font-size:13.5px;max-width:84ch">Untouched by the voice: "Now", day names, all numbers and times, the app name. Length caps, mono-adjusted: hero line ≤ 34 chars (wraps to two), reading subs ≤ 24 (wrap to two by design), banner ≤ 32, buttons ≤ 20 — anything longer belongs to the error/empty bodies, which have room.</p>
+</section>
+
+<!-- ================= BEHAVIOR ================= -->
+<section id="behavior">
+  <div class="eyebrow">04 · Behavior &amp; states</div>
+  <h2>Interaction rules and the full state matrix</h2>
+
+  <h3>Forecast screen</h3>
+  <ul class="tight">
+    <li><b>Source of truth:</b> the screen observes <i>selected city</i> from DataStore — a nullable value. While it is null (first launch, nothing chosen yet) the screen shows the empty state (Frame F) prompting the user to pick a location; once set, it persists across launches. Changing city (from search or GPS) just writes to DataStore — the forecast screen reacts, no result-passing between destinations.</li>
+    <li><b>Load policy:</b> emit cache immediately if present → fetch when cache is missing or older than 30 min, or when the screen resumes stale, or on pull-to-refresh (which always fetches).</li>
+    <li><b>Hero collapse:</b> the hero block exits-until-collapsed with the scroll — fully expanded at rest, gone once the list takes over, at which point the pinned app-bar title switches from "Budapest" to "Budapest · 27°" (and back on return to top).</li>
+    <li><b>Day details:</b> tapping any row in the five-day list — Today included — opens the <span class="m">day/{date}</span> destination. The screen performs <b>no fetch</b>: it renders from the forecast held in the repository, and functions offline. Today's log lists only remaining slots; the free tier returns no past data. If the date rolls past midnight while backgrounded, the screen pops back to the dashboard.</li>
+    <li><b>GPS button:</b> tap → coarse-location permission if not granted → fused location (balanced power) → OWM reverse geocode → write city to DataStore. Denied → snackbar "The city won't give you up. Name it yourself." with a <b>Name it</b> action. "Never ask again" → same snackbar, action opens app settings.</li>
+    <li><b>Search icon</b> navigates to <span class="m">search</span>; the title is a status line, not a control.</li>
+  </ul>
+
+  <h3>Search screen</h3>
+  <ul class="tight">
+    <li>Autofocus with keyboard up; query is debounced 300 ms, min 2 chars, limit 10, previous request cancelled.</li>
+    <li>Row tap → save city (+ prepend to recents, max 5, deduped) → return to the forecast screen.</li>
+    <li>Empty query → "Cold cases" header + stored rows; no matches → centered "No leads on 'xyz'."; geocoding error → inline "The search hit a wall." + "Run it again" text button.</li>
+  </ul>
+
+  <h3>Day details screen</h3>
+  <ul class="tight">
+    <li><b>Entry &amp; exit:</b> from any day row; back arrow and system back both return to the dashboard. App bar: back + "{Weekday} · {Mon D}".</li>
+    <li><b>Content, top to bottom:</b> HeroBlock day-variant (day max, no feels-like) → the typed day log under "{Weekday}, step by step" → the details ledger → attribution. No hour strip here — that stays a dashboard device.</li>
+    <li><b>Day log rows:</b> 48 dp — time · glyph · precip % · typed in-day marker (a typed <span class="m">+</span> on the dot track at (t − day min) ⁄ day span) · temp. Today's log lists only the remaining slots.</li>
+    <li><b>No states of its own:</b> renders from the repository forecast — no fetch, no loading state, no error state. Midnight rollover while backgrounded pops back to the dashboard.</li>
+  </ul>
+
+  <h3>State matrix</h3>
+  <table class="t">
+    <tr><th>State</th><th>Trigger</th><th>UI</th></tr>
+    <tr><td>No city selected</td><td>First launch; nothing chosen yet</td><td>Empty state (Frame F): "TRACE MY STEPS" / "name a city instead"</td></tr>
+    <tr><td>First load</td><td>City selected, no cache, fetch running</td><td>Typed skeleton (Frame D)</td></tr>
+    <tr><td>Content</td><td>Fetch OK</td><td>Full screen, "The trail was warm at HH:mm" on hero</td></tr>
+    <tr><td>Day details</td><td>Tap any day row</td><td>Opens <span class="m">day/{date}</span> (Frame H) — no fetch, renders from cache; back returns to the dashboard</td></tr>
+    <tr><td>Refreshing</td><td>Pull-to-refresh / auto-refresh</td><td>Content stays + PTR indicator; no skeleton</td></tr>
+    <tr><td>Stale content</td><td>Cache &gt; 30 min, refresh in flight</td><td>Content renders instantly, silent refresh, timestamp swaps on success</td></tr>
+    <tr><td>Offline w/ cache</td><td>Fetch failed, cache exists</td><td>Content + OfflineBanner with cache time + Retry</td></tr>
+    <tr><td>Error, no cache</td><td>Fetch failed, nothing stored</td><td>Full-screen error (Frame E): "RUN IT AGAIN" + "name a city instead"</td></tr>
+    <tr><td>Permission denied</td><td>GPS tap refused</td><td>Snackbar with Name it / Settings action; selection unchanged</td></tr>
+    <tr><td>Location off</td><td>Permission OK, providers disabled</td><td>Snackbar "Location's gone dark. Flip it back on." + Settings action</td></tr>
+    <tr><td>Search: no results</td><td>Geocoding returns []</td><td>Centered empty message</td></tr>
+  </table>
+</section>
+
+<!-- ================= DATA ================= -->
+<section id="data">
+  <div class="eyebrow">05 · Data mapping</div>
+  <h2>OpenWeatherMap free tier → this UI</h2>
+
+  <h3>Endpoints (all one API key)</h3>
+  <p class="mut" style="font-size:13.5px;margin-top:6px">Host <span class="m">api.openweathermap.org</span> — all four calls share the one free key, sent as the <span class="m">appid</span> query parameter.</p>
+  <table class="t">
+    <tr><th>Call</th><th>Path</th><th>Parameters</th></tr>
+    <tr><td>Current conditions</td><td class="m">/data/2.5/weather</td><td><span class="m">lat · lon · units=metric</span></td></tr>
+    <tr><td>5-day / 3-hour forecast</td><td class="m">/data/2.5/forecast</td><td><span class="m">lat · lon · units=metric</span> — returns 40 slots</td></tr>
+    <tr><td>City search</td><td class="m">/geo/1.0/direct</td><td><span class="m">q · limit=10</span></td></tr>
+    <tr><td>Reverse geocoding</td><td class="m">/geo/1.0/reverse</td><td><span class="m">lat · lon · limit=1</span></td></tr>
+  </table>
+
+  <h3>Field mapping</h3>
+  <table class="t">
+    <tr><th>UI element</th><th>Source</th></tr>
+    <tr><td>Hero temp / feels-like</td><td><span class="m">/weather</span> → <span class="m">main.temp</span> (rounded), <span class="m">main.feels_like</span></td></tr>
+    <tr><td>Hero condition + stamp ink + glyph</td><td><span class="m">weather[0].id</span> (table below) + day/night from <span class="m">weather[0].icon</span> suffix <span class="m">d/n</span></td></tr>
+    <tr><td>Hero H / L</td><td>Aggregated <b>today</b> min/max (see rules) — <i>not</i> <span class="m">main.temp_min/max</span></td></tr>
+    <tr><td>Hour columns</td><td>"Now" from <span class="m">/weather</span> + <span class="m">/forecast.list[0..7]</span>: <span class="m">dt</span>, <span class="m">main.temp</span>, <span class="m">weather[0]</span>, <span class="m">pop</span></td></tr>
+    <tr><td>HUMIDITY reading</td><td><span class="m">main.humidity</span> · sub <span class="m">clouds.all</span>%</td></tr>
+    <tr><td>WIND reading</td><td><span class="m">wind.speed</span>, <span class="m">wind.gust</span> — <b>× 3.6</b> (API returns m/s in metric mode)</td></tr>
+    <tr><td>SUNRISE reading (dashboard only)</td><td><span class="m">sys.sunrise</span> / <span class="m">sys.sunset</span> (unix UTC) shifted by <span class="m">timezone</span></td></tr>
+    <tr><td>PRESSURE reading</td><td><span class="m">main.pressure</span> hPa · sub <span class="m">main.grnd_level</span></td></tr>
+    <tr><td>5-day rows</td><td>Aggregation of <span class="m">/forecast.list</span>, rules below</td></tr>
+    <tr><td>Search rows</td><td><span class="m">/geo/direct</span> → <span class="m">name</span> · <span class="m">state?, country</span></td></tr>
+  </table>
+
+  <div class="note"><b>Three OWM behaviors to account for:</b> ① <span class="m">main.temp_min/max</span> in <span class="m">/weather</span> is a same-moment spatial spread, not today's range — H/L is derived from the aggregation below. ② wind is m/s even with <span class="m">units=metric</span>. ③ all <span class="m">dt</span> values are UTC; shift by the response's <span class="m">timezone</span> offset before formatting labels, so a searched Tokyo shows Tokyo's clock.</div>
+
+  <h3>Daily aggregation — data layer, unit-tested</h3>
+  <ul class="tight">
+    <li>Bucket each 3-h slot by <b>local calendar date</b> (dt + timezone offset).</li>
+    <li>Day min = min of <span class="m">main.temp_min</span>; max = max of <span class="m">main.temp_max</span> over the bucket. Today additionally folds in the current temp from <span class="m">/weather</span>.</li>
+    <li>Day condition = the slot nearest 13:00 local, with the glyph forced to its day variant.</li>
+    <li>Day precip = max <span class="m">pop</span> × 100, shown at ≥ 10%.</li>
+    <li>Render "Today" + following dates having ≥ 4 slots — normally exactly 5 rows; a thin trailing partial day is dropped.</li>
+  </ul>
+
+  <h3>Condition mapping — <span class="m">weather[0].id</span></h3>
+  <table class="t">
+    <tr><th>id range</th><th>Label</th><th>Icon</th><th>Stamp ink · day grade shown</th></tr>
+    <tr><td class="m">200–232</td><td>Thunderstorm</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#9C4A32">/!\</span> thunder</td><td><span class="grad" style="background:#9C4A32"></span><span class="m">ink-thunder</span></td></tr>
+    <tr><td class="m">300–321</td><td>Drizzle</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#3E6C99">//</span> drizzle</td><td><span class="grad" style="background:#3E6C99"></span><span class="m">ink-rain</span></td></tr>
+    <tr><td class="m">500–531</td><td>Rain</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#3E6C99">///</span> rain</td><td><span class="grad" style="background:#3E6C99"></span><span class="m">ink-rain</span></td></tr>
+    <tr><td class="m">600–622</td><td>Snow</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#37707A">***</span> snow</td><td><span class="grad" style="background:#37707A"></span><span class="m">ink-snow</span></td></tr>
+    <tr><td class="m">701–781</td><td>Fog / mist / haze</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#6E6754">===</span> fog</td><td><span class="grad" style="background:#6E6754"></span><span class="m">ink-fog</span></td></tr>
+    <tr><td class="m">800</td><td>Clear</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#8F5B0E">*</span> sun / <span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#4E6480">)</span> moon</td><td><span class="grad" style="background:#8F5B0E"></span><span class="m">ink-clear</span> / <span class="m">ink-night</span></td></tr>
+    <tr><td class="m">801–802</td><td>Partly cloudy</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#5A665C">(*)</span> partly — <span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#4E6480">)</span> at night</td><td><span class="grad" style="background:#5A665C"></span><span class="m">ink-partly</span> / <span class="m">ink-night</span></td></tr>
+    <tr><td class="m">803–804</td><td>Overcast</td><td><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:#5A5F68">(~)</span> overcast</td><td><span class="grad" style="background:#5A5F68"></span><span class="m">ink-overcast</span></td></tr>
+  </table>
+  <p class="mut" style="font-size:13.5px">Night rule: <span class="m">icon</span> ends in <span class="m">n</span> and id ≤ 802 → <span class="m">ink-night</span>; heavier weather keeps its own ink around the clock. Display strings for each condition come from the copy deck (§ 03).</p>
+
+  <h3>API key &amp; caching</h3>
+  <p style="font-size:14px;max-width:80ch;margin-top:8px">The key lives in a git-ignored <span class="m">local.properties</span> entry, reaches the network layer through build configuration, and is attached to every request as the <span class="m">appid</span> query parameter by a network interceptor — it appears nowhere in source control.</p>
+  <ul class="tight">
+    <li>Cache = the <b>mapped domain model</b> (+ fetchedAt, city), serialized with kotlinx.serialization into Preferences DataStore. One city cached at a time — matches "selected city" semantics. Room is the drop-in upgrade if you want per-city history.</li>
+    <li>Recents (max 5 cities) and selected city live in the same DataStore.</li>
+    <li>Staleness threshold 30 min; timestamps rendered as "The trail was warm at HH:mm".</li>
+  </ul>
+</section>
+
+<!-- ================= ARCHITECTURE ================= -->
+<section id="arch">
+  <div class="eyebrow">06 · Architecture hooks</div>
+  <h2>Modules, state, and where the spec lands in code</h2>
+
+  <div class="arch">
+    <div class="arow"><div class="modb">:app</div></div>
+    <div class="dep">↓ depends on</div>
+    <div class="arow"><div class="modb">:feature:forecast</div><div class="modb">:feature:search</div></div>
+    <div class="dep">↓ depends on</div>
+    <div class="arow"><div class="modb core">:core:designsystem</div><div class="modb core">:core:domain</div></div>
+    <div class="dep">↑ implemented by (interfaces bound in :app via Hilt)</div>
+    <div class="arow"><div class="modb core">:core:data</div></div>
+  </div>
+
+  <p class="mut" style="font-size:13.5px;max-width:84ch;margin-top:14px">Placement rule: if a composable knows the domain, it belongs to its feature; only domain-free pieces go in <span class="m">core:designsystem</span>. With two features and no component overlap between them, a shared UI library would be a boundary with one client.</p>
+  <table class="t">
+    <tr><th>Module</th><th>Contains</th></tr>
+    <tr><td class="m">:app</td><td>Navigation host, DI setup (Hilt), binds data implementations to domain interfaces</td></tr>
+    <tr><td class="m">:feature:forecast</td><td>ForecastScreen, DayDetailsScreen, their ViewModels, UI models + mappers, and the components only they use: HeroBlock, HourColumn, ReadingRow, DayRow, OfflineBanner, typed skeleton</td></tr>
+    <tr><td class="m">:feature:search</td><td>SearchScreen, SearchViewModel, SearchField and its list rows</td></tr>
+    <tr><td class="m">:core:designsystem</td><td>Domain-free only: app theme (tokens of § 02), action text styles, the shared empty/error scaffold, and the two typed primitives — dot-leader row and range-bar string builder. Components that take forecast-shaped models stay with their feature, so this module never depends on <span class="m">:core:domain</span></td></tr>
+    <tr><td class="m">:core:domain</td><td>Pure Kotlin: models (City, Forecast, DaySummary, HourSlot), repository + location interfaces, use cases (ObserveSelectedCity, GetForecast, SearchCities, SelectCity, ResolveCurrentCity)</td></tr>
+    <tr><td class="m">:core:data</td><td>Retrofit/OkHttp + kotlinx.serialization DTOs, the aggregation mapper, DataStore cache, FusedLocation impl, reverse geocoding</td></tr>
+  </table>
+
+  <h3>Forecast screen — state contract</h3>
+  <table class="t">
+    <tr><th>State</th><th>Carries</th><th>Renders as</th></tr>
+    <tr><td>Empty</td><td>—</td><td>Frame F; no city has been selected yet</td></tr>
+    <tr><td>Loading</td><td>—</td><td>Typed skeleton (Frame D); a city is selected but nothing is cached yet</td></tr>
+    <tr><td>Content</td><td>forecast · updated-at (HH:mm) · refreshing flag · offline flag</td><td>Frames A/B; the refreshing flag drives the pull-to-refresh spinner, the offline flag shows the OfflineBanner</td></tr>
+    <tr><td>Error</td><td>—</td><td>Frame E; entered only when the fetch fails and nothing is cached</td></tr>
+  </table>
+  <p style="font-size:14px;max-width:84ch">The screen renders from exactly one of these values — no side-channel flags outside the contract. <b>Navigation contract:</b> single activity, routes <span class="m">forecast</span> (start), <span class="m">search</span>, and <span class="m">day/{date}</span>. City selection is never a navigation result: search persists the chosen city to app state and returns. The details route carries only a date and re-reads the cached forecast — no result passing anywhere, and everything survives process death.</p>
+
+  <p style="font-size:14px;max-width:84ch"><b>Theme resolution:</b> one fixed day/night pair (§ 02), switched by the system dark-mode flag — dynamic color is retired (decisions log). Typography is a single bundled family, Courier Prime, in the roles of § 02; ink, stroke, shape and grain values come straight from § 02 — that section is the single source of truth for <span class="m">core:designsystem</span>.</p>
+</section>
+
+<!-- ================= A11Y ================= -->
+<section id="a11y">
+  <div class="eyebrow">07 · Accessibility &amp; motion</div>
+  <h2>The quality floor</h2>
+  <ul class="tight">
+    <li><b>Semantics:</b> each day row is one merged element — "Friday: rain likely, 18 to 27 degrees"; each hour column "6 PM, 26 degrees, 10 percent chance of rain". Day rows announce their action ("Opens Friday details"); details log rows merge to one element each ("15:00, 26 degrees, 35 percent chance of rain"). Icon buttons get contentDescriptions ("Use current location", "Search for a city", "Back") — literal, not noir; decorative weather glyphs are <span class="m">null</span>. The condition stamp doubles as the literal label for screen readers; the noir line and the typed glyphs are decorative — nothing ever reads "slash slash slash" aloud.</li>
+    <li><b>Contrast:</b> hero text is <span class="m">onSurface</span> on <span class="m">background</span>. The eight stamp inks meet ≥ 4.5:1 against their own theme's background; the ≤ 5% grain shifts measured ratios by under 0.2, so all pairs remain above threshold. Precip info is glyph + color, never color alone.</li>
+    <li><b>Font scaling:</b> everything in sp; hour columns get intrinsic-height head-room; test at 200%.</li>
+    <li><b>Targets:</b> everything tappable ≥ 48 dp (see § 02 table).</li>
+    <li><b>Motion:</b> loading is a single blinking block cursor (530 ms on, 530 ms off, hard steps — no fade) occupying the temperature slot, with static dot-leader placeholders below it at ~40% opacity; skeleton→content crossfade 250 ms; screen transitions default fade-through; banner 200 ms fade+expand. All decorative animation respects the system's "remove animations" setting. The grain is a static texture — nothing to disable; under reduced motion the cursor stops blinking and stays solid.</li>
+  </ul>
+</section>
+
+<!-- ================= DECISIONS ================= -->
+<section id="decisions">
+  <div class="eyebrow">08 · Decisions log</div>
+  <h2>What was decided, and what it cost</h2>
+  <table class="t">
+    <tr><th>Question</th><th>Decision</th><th>Consequence</th></tr>
+    <tr><td>Forecast API</td><td><b>OpenWeatherMap free tier</b></td><td>"Week" = honest 5 days from 3-h slots; client-side daily aggregation (good Clean-Arch showcase); no UV → SUNRISE reading instead; key via local.properties</td></tr>
+    <tr><td>Offline cache</td><td><b>Yes</b></td><td>DataStore-cached domain model, "The trail was warm at HH:mm", OfflineBanner, 30-min staleness</td></tr>
+    <tr><td>Theming</td><td><s>Dynamic surfaces + hero gradients</s> → <b>Typewriter-flat noir</b></td><td>Superseded by the persona: fixed day/night pair, Courier Prime throughout, solid condition inks, 1 dp panel strokes, film grain on both themes — dynamic color and gradients retired together</td></tr>
+    <tr><td>Hero</td><td>Card retired → typed block + stamp</td><td>Cardless hero straight on the background, exit-until-collapsed into the app-bar title ("City · N°"); condition identity moves to an eight-ink stamp palette with day/night grades — blue now only means water</td></tr>
+    <tr><td>Icons</td><td>Teletype glyphs + sharp chrome</td><td>Weather = nine typed Courier characters in condition ink — zero image assets; chrome moves to Material Symbols Sharp (2 dp, butt caps). Accepted trade-off: glyph recognition at hour-column size leans on convention</td></tr>
+    <tr><td>Day drill-down</td><td><s>In-place day view</s> → <b>day/{date} destination</b></td><td>The dashboard stays pure now-mode; every day row opens a details screen rendered from the cached forecast (no fetch); day rows carry a typed ">" affordance; the title stays a plain status line</td></tr>
+    <tr><td>Readings &amp; lists</td><td>Ledger, de-carded</td><td>Tiles and the day-list card retired: readings become a typed dot-leader ledger with noir subs, the day list sits bare with hairline dividers; the tile markers (% · &gt;&gt; · ^ · (/)) retire with the tiles</td></tr>
+    <tr><td>24-hour strip</td><td>Bare columns + typed pipes</td><td>The last content cards retired: hour slots become bare typed columns split by stacked <span class="m">|</span> dividers — the strip now follows the same no-container rule as the ledger and the day list</td></tr>
+    <tr><td>Range bar</td><td>Typed: dots + <span class="m">=</span></td><td>The last drawn graphic and last gradient retired — track is dot leaders, fill is an <span class="m">=</span> run in primary, the details slot marker a <span class="m">+</span>. Positions quantize to the character grid (~6% granularity), accepted; implementation drops Canvas for string assembly</td></tr>
+    <tr><td>Partly-cloudy ink</td><td>Olive → grey-sage</td><td>Olive read amber-adjacent at glyph size. Blue was rejected to protect "blue = water", plain grey to protect overcast's graphite; grey-sage (<span class="m">#5A665C</span> / <span class="m">#9AA89E</span>) is greyish with just enough green to stay distinct — still ≥ 4.5:1 on both grounds</td></tr>
+    <tr><td>Buttons &amp; empty states</td><td>Text-only, typed marks</td><td>The last Material components retired: actions are UPPERCASE amber (primary) vs lowercase onSurfaceVariant (secondary) — no fill, border or underline, hierarchy carried by case; empty-state icons become typed <span class="m">(x)</span> and <span class="m">(?)</span></td></tr>
+    <tr><td>Loading</td><td>Typed skeleton + cursor</td><td>Shimmer bars were skeletons of cards that no longer exist: the page types itself in with dot leaders and <span class="m">--</span> placeholders, a single block cursor blinking in the temperature slot — the frontier where the next real value lands. Cheaper than an animated gradient; accepted trade-off: less conventional than a shimmer</td></tr>
+    <tr><td>Navigation</td><td>Two destinations</td><td>Maps 1:1 to the two feature modules; city selection flows through DataStore, not nav results</td></tr>
+    <tr><td>Today + week</td><td>One scrolling screen</td><td>Both views in one scroll; no tab state</td></tr>
+    <tr><td>First-launch state</td><td>Empty state</td><td>No invented default city — the user explicitly picks via GPS or search (Frame F); the selection then persists</td></tr>
+    <tr><td>Copy voice</td><td>Weather-noir persona</td><td>One character narrates every display string (copy deck, § 03); original pastiche, no quoted lines or named characters; accessibility strings stay literal</td></tr>
+    <tr><td>Location permission</td><td>Contextual, coarse only</td><td>No launch prompt; denial degrades to search, never blocks</td></tr>
+    <tr><td>Units</td><td>Metric only</td><td><span class="m">units=metric</span>; °C, km/h after ×3.6</td></tr>
+  </table>
+  <h3>Stretch, in order of payoff</h3>
+  <ul class="tight">
+    <li>One Call 3.0 (card-gated free tier): true 7-day + real hourly + UV — DayRow tolerates 7 rows, and UV would slot into the ledger as a fifth reading.</li>
+    <li>Units toggle (°C/°F) in an app-bar overflow menu.</li>
+    <li>Saved cities: promote recents to a persistent list with swipe-to-remove.</li>
+  </ul>
+</section>
+
+<footer>
+  Upcoming Weather design spec v1.0 · mockups render the noir day/night pair at 1 px = 1 dp · weather data © OpenWeather (attribution required in-app).
+</footer>
+
+</div>
+</body>
+</html>
