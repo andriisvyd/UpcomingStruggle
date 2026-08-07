@@ -32,7 +32,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirSecondaryAction
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSectionStamp
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessage
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirMarkerBar
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirPlaceholderDefaults
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirPlaceholder
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirRangeBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTiltedStamp
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
@@ -106,7 +106,7 @@ private fun PrimitiveGallery() {
                     ) {
                         NoirBlinkingCursor()
                         NoirPipeDivider(Modifier.height(92.dp).width(16.dp))
-                        NoirPlaceholderDefaults("HUMIDITY ............ --")
+                        NoirPlaceholder("HUMIDITY ............ --")
                     }
 
                     NoirTextField(

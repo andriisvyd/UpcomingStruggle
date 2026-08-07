@@ -21,17 +21,17 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.svyd.upcomingweather.core.designsystem.foundation.animationsEnabled
 
-/** Tokens for [NoirBlinkingCursor] and [NoirPlaceholderDefaults]. */
-object PlaceholderDefaults {
+/** Tokens for [NoirBlinkingCursor] and [NoirPlaceholder]. */
+object NoirPlaceholderDefaults {
     /** On for this long, off for this long, hard steps — no fade. */
-    const val BLINK_MILLIS = 530
+    const val BlinkMillis = 530
 
     /** Sized in sp: the cursor stands in for a character, so it grows with the type. */
     val CursorWidth = 9.sp
     val CursorHeight = 15.sp
 
     /** Faded back far enough to read as what is still coming rather than as content. */
-    const val PLACEHOLDER_ALPHA = 0.38f
+    const val PlaceholderAlpha = 0.38f
 }
 
 /**
@@ -42,8 +42,8 @@ object PlaceholderDefaults {
 @Composable
 fun NoirBlinkingCursor(
     modifier: Modifier = Modifier,
-    width: TextUnit = PlaceholderDefaults.CursorWidth,
-    height: TextUnit = PlaceholderDefaults.CursorHeight,
+    width: TextUnit = NoirPlaceholderDefaults.CursorWidth,
+    height: TextUnit = NoirPlaceholderDefaults.CursorHeight,
     color: Color = MaterialTheme.colorScheme.primary,
 ) {
     val size = with(LocalDensity.current) { DpSize(width.toDp(), height.toDp()) }
@@ -60,10 +60,10 @@ fun NoirBlinkingCursor(
                 // one-millisecond gap between the second and third keyframes steps it to 0 without
                 // an interpolated fade.
                 animation = keyframes {
-                    durationMillis = PlaceholderDefaults.BLINK_MILLIS * 2
+                    durationMillis = NoirPlaceholderDefaults.BlinkMillis * 2
                     1f at 0
-                    1f at PlaceholderDefaults.BLINK_MILLIS - 1
-                    0f at PlaceholderDefaults.BLINK_MILLIS
+                    1f at NoirPlaceholderDefaults.BlinkMillis - 1
+                    0f at NoirPlaceholderDefaults.BlinkMillis
                 },
                 repeatMode = RepeatMode.Restart,
             ),
@@ -85,10 +85,10 @@ fun NoirBlinkingCursor(
  * as what is still coming rather than as content.
  */
 @Composable
-fun NoirPlaceholderDefaults(
+fun NoirPlaceholder(
     text: String,
     modifier: Modifier = Modifier,
-    alpha: Float = PlaceholderDefaults.PLACEHOLDER_ALPHA,
+    alpha: Float = NoirPlaceholderDefaults.PlaceholderAlpha,
     style: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     Text(

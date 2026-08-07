@@ -23,13 +23,13 @@ fun NoirHairlineDivider(modifier: Modifier = Modifier) {
 @Composable
 fun NoirPipeDivider(
     modifier: Modifier = Modifier,
-    pipes: Int = NoirDividerDefaults.PIPES,
+    pipes: Int = NoirDividerDefaults.Pipes,
 ) {
     Text(
         text = List(pipes) { PIPE }.joinToString("\n"),
         style = NoirTheme.type.divider,
         color = MaterialTheme.colorScheme.onSurfaceVariant
-            .copy(alpha = NoirDividerDefaults.ALPHA),
+            .copy(alpha = NoirDividerDefaults.Alpha),
         textAlign = TextAlign.Center,
         modifier = modifier,
     )
@@ -41,6 +41,6 @@ private const val PIPE = "|"
 /** Tokens for [NoirPipeDivider]. */
 object NoirDividerDefaults {
     /** Four marks run to roughly the height of an hour column. */
-    const val PIPES = 4
-    const val ALPHA = 0.75f
+    const val Pipes = 4
+    const val Alpha = 0.75f
 }

@@ -28,7 +28,7 @@ fun NoirTiltedStamp(
         style = NoirTheme.type.conditionStamp,
         color = ink,
         modifier = modifier
-            .rotate(NoirStampDefaults.STAMP_TILT)
+            .rotate(NoirStampDefaults.StampTilt)
             .border(
                 width = NoirStampDefaults.BorderWidth,
                 color = ink,
@@ -59,7 +59,7 @@ fun NoirSectionStamp(
 /** Tokens for [NoirTiltedStamp]. */
 object NoirStampDefaults {
     /** Degrees off square — a stamp pressed by hand is never straight. */
-    const val STAMP_TILT = -2f
+    const val StampTilt = -2f
     val BorderWidth = NoirStroke.stamp
     val HorizontalPadding = 9.dp
     val VerticalPadding = 3.dp
