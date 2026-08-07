@@ -96,7 +96,7 @@ fun NoirMarkerBar(
  * Both fractions are 0..1 of the bar's full range. The body is never shorter than one cell, so a
  * zero-width span still reads as a mark rather than vanishing.
  */
-private fun rangeBar(
+internal fun rangeBar(
     cells: Int,
     startFraction: Float,
     endFraction: Float,
@@ -116,7 +116,7 @@ private fun rangeBar(
 }
 
 /** A single position on the track — the details screen's in-day temperature marker. */
-private fun markerBar(
+internal fun markerBar(
     cells: Int,
     fraction: Float,
     trackChar: Char = NoirBarDefaults.TrackChar,
