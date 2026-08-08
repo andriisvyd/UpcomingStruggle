@@ -5,8 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -64,6 +67,10 @@ fun NoirBackground(
             .fillMaxSize()
             .background(color)
             .then(remember(grainAlpha) { Modifier.filmGrain(grainAlpha) }),
-        content = content,
-    )
+    ) {
+        // Text that states no colour of its own reads this instead of the black default.
+        CompositionLocalProvider(LocalContentColor provides contentColorFor(color)) {
+            content()
+        }
+    }
 }
