@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_placeholder">Name the city.</string>
+    <string name="search_location_action">Trace my steps</string>
+    <string name="search_recents_header">Cold cases</string>
+
+    <!-- Geocoding returned nothing. %1$s is the query the user typed. -->
+    <string name="search_no_results">No leads on \'%1$s\'.</string>
+
+    <!-- Geocoding failed. -->
+    <string name="search_error_message">The search hit a wall.</string>
+    <string name="search_error_action">Run it again</string>
+
+    <!-- Spoken, never voiced: these are read aloud by a screen reader. -->
+    <string name="search_cd_back">Back</string>
+    <string name="search_cd_search">Search</string>
+    <string name="search_cd_clear">Clear the query</string>
+    <string name="search_cd_location">Use current location</string>
+</resources>
