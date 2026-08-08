@@ -47,8 +47,8 @@ fun NoirEmptyStateMessage(
         Text(
             text = glyph,
             style = NoirTheme.type.glyphHero.copy(
-                fontSize = NoirEmptyStateMessageDefaults.GlyphSize,
-                lineHeight = NoirEmptyStateMessageDefaults.GlyphSize,
+                fontSize = GlyphSize,
+                lineHeight = GlyphSize,
             ),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -69,16 +69,7 @@ fun NoirEmptyStateMessage(
     }
 }
 
-/** Tokens for [NoirEmptyStateMessage]. */
-object NoirEmptyStateMessageDefaults {
-    val HorizontalPadding = 28.dp
-
-    /** Holds the message off the top of the screen; the column scrolls when type is large. */
-    val VerticalPadding = 84.dp
-
-    /**
-     * Smaller than the hero glyph it borrows its style from — in sp, so it tracks the user's
-     * font setting like the text around it.
-     */
-    val GlyphSize = 40.sp
-}
+private val HorizontalPadding = 28.dp
+/** Holds the message off the top of the screen; the column scrolls when type is large. */
+private val VerticalPadding = 84.dp
+private val GlyphSize = 40.sp

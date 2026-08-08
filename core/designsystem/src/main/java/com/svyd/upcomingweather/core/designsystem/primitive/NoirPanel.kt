@@ -50,8 +50,8 @@ fun NoirPanel(
 
 /** Tokens for [NoirPanel]. */
 object NoirPanelDefaults {
-    val ContentPadding = PaddingValues(horizontal = NoirSpacing.m, vertical = 10.dp)
+    val ContentPadding = PaddingValues(horizontal = NoirSpacing.m, vertical = 8.dp)
 
     /** Gap between the panel's icon, its text and its action. */
-    val ContentGap = 10.dp
+    val ContentGap = 8.dp
 }

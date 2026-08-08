@@ -41,12 +41,12 @@ fun NoirListRow(
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .heightIn(min = minHeight)
-            .padding(NoirListRowDefaults.ContentPadding),
+            .padding(ContentPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
             leading()
-            Spacer(Modifier.width(NoirListRowDefaults.LeadingGap))
+            Spacer(Modifier.width(LeadingGap))
         }
         Column(Modifier.weight(1f)) {
             Text(
@@ -63,7 +63,7 @@ fun NoirListRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = NoirListRowDefaults.SupportingSpacing),
+                    modifier = Modifier.padding(top = SupportingSpacing),
                 )
             }
         }
@@ -74,9 +74,9 @@ fun NoirListRow(
 object NoirListRowDefaults {
     /** A minimum, not a height — a row with a second line is taller. */
     val MinHeight = 60.dp
-    val ContentPadding = 4.dp
-
-    /** Gap between the leading slot and the headline. */
-    val LeadingGap = 14.dp
-    val SupportingSpacing = 1.dp
 }
+
+/** Gap between the leading slot and the headline. */
+private val LeadingGap = 16.dp
+private val SupportingSpacing = 4.dp
+private val ContentPadding = 4.dp

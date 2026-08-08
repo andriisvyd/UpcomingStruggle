@@ -40,9 +40,9 @@ fun NoirDotLeaderRow(
                 modifier = Modifier
                     .weight(1f)
                     .padding(
-                        horizontal = NoirDotLeaderRowDefaults.Clearance,
+                        horizontal = Clearance,
                         // Drops the rule from the middle of the row onto the shared baseline.
-                        vertical = NoirDotLeaderRowDefaults.BaselineDrop,
+                        vertical = BaselineDrop,
                     ),
             )
             Text(
@@ -58,8 +58,8 @@ fun NoirDotLeaderRow(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(
-                    start = NoirDotLeaderRowDefaults.DetailIndent,
-                    top = NoirDotLeaderRowDefaults.DetailSpacing,
+                    start = DetailIndent,
+                    top = DetailSpacing,
                 ),
             )
         }
@@ -71,11 +71,11 @@ fun NoirDotLeaderRow(
 private fun DotLeader(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurfaceVariant
-        .copy(alpha = NoirDotLeaderRowDefaults.DotAlpha),
+        .copy(alpha = DotAlpha),
 ) {
-    Canvas(modifier.height(NoirDotLeaderRowDefaults.DotDiameter)) {
-        val radius = NoirDotLeaderRowDefaults.DotDiameter.toPx() / 2f
-        val step = NoirDotLeaderRowDefaults.DotSpacing.toPx()
+    Canvas(modifier.height(DotDiameter)) {
+        val radius = DotDiameter.toPx() / 2f
+        val step = DotSpacing.toPx()
         val y = size.height / 2f
         var x = radius
         while (x <= size.width - radius) {
@@ -85,17 +85,12 @@ private fun DotLeader(
     }
 }
 
-/** Tokens for [NoirDotLeaderRow] and [DotLeader]. */
-object NoirDotLeaderRowDefaults {
-    val DotDiameter = 2.dp
-    val DotSpacing = 4.dp
-    val DotAlpha = 0.55f
-
-    /** Clear space between the rule and the label or value either side of it. */
-    val Clearance = 8.dp
-    val BaselineDrop = 5.dp
-
-    /** The commentary line sits under the label, indented. */
-    val DetailIndent = 16.dp
-    val DetailSpacing = 3.dp
-}
+private val DotDiameter = 2.dp
+private val DotSpacing = 4.dp
+private val DotAlpha = 0.55f
+/** Clear space between the rule and the label or value either side of it. */
+private val Clearance = 8.dp
+private val BaselineDrop = 4.dp
+/** The commentary line sits under the label, indented. */
+private val DetailIndent = 16.dp
+private val DetailSpacing = 4.dp

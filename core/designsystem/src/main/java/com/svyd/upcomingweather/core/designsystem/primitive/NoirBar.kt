@@ -40,7 +40,7 @@ private fun cellCount(availableWidthPx: Int, minCells: Int): Int {
     val style = NoirTheme.type.bar
     val measurer = rememberTextMeasurer()
     val cellWidth = remember(style, measurer) {
-        measurer.measure(NoirBarDefaults.TrackChar.toString(), style).size.width
+        measurer.measure(TrackChar.toString(), style).size.width
     }
     val bounded = availableWidthPx in 1 until (Int.MAX_VALUE / 2)
     // [minCells] is the fallback for an unbounded measure, never a floor that would push the bar
@@ -100,8 +100,8 @@ internal fun rangeBar(
     cells: Int,
     startFraction: Float,
     endFraction: Float,
-    trackChar: Char = NoirBarDefaults.TrackChar,
-    fillChar: Char = NoirBarDefaults.FillChar,
+    trackChar: Char = TrackChar,
+    fillChar: Char = FillChar,
 ): TypedBar {
     if (cells <= 0) return TypedBar("", "", "")
     val start = startFraction.coerceIn(0f, 1f)
@@ -119,8 +119,8 @@ internal fun rangeBar(
 internal fun markerBar(
     cells: Int,
     fraction: Float,
-    trackChar: Char = NoirBarDefaults.TrackChar,
-    markerChar: Char = NoirBarDefaults.MarkerChar,
+    trackChar: Char = TrackChar,
+    markerChar: Char = MarkerChar,
 ): TypedBar = rangeBar(cells, fraction, fraction, trackChar, markerChar)
 
 /** A bar assembled out of characters: [leading] and [trailing] are track, [body] is the mark. */
@@ -138,13 +138,12 @@ internal data class TypedBar(
  * reason this app draws no graphics at all.
  */
 object NoirBarDefaults {
-    const val TrackChar = '.'
-    const val FillChar = '='
-    const val MarkerChar = '+'
-
     const val TrackAlpha = 0.5f
 
     /** Used only when the bar is measured with an unbounded width. */
     const val FallbackCells = 12
 }
 
+private const val TrackChar = '.'
+private const val FillChar = '='
+private const val MarkerChar = '+'

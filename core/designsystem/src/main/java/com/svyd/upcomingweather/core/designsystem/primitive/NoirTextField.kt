@@ -50,7 +50,7 @@ fun NoirTextField(
 
     Row(
         modifier = modifier
-            .heightIn(min = NoirTextFieldDefaults.MinHeight)
+            .heightIn(min = MinHeight)
             .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .border(
@@ -58,12 +58,12 @@ fun NoirTextField(
                 color = MaterialTheme.colorScheme.outlineVariant,
                 shape = MaterialTheme.shapes.small,
             )
-            .padding(horizontal = NoirTextFieldDefaults.HorizontalPadding),
+            .padding(horizontal = HorizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
             leading()
-            Box(Modifier.padding(end = NoirTextFieldDefaults.SlotGap))
+            Box(Modifier.padding(end = SlotGap))
         }
         BasicTextField(
             value = value,
@@ -90,18 +90,14 @@ fun NoirTextField(
             },
         )
         if (trailing != null) {
-            Box(Modifier.padding(start = NoirTextFieldDefaults.SlotGap))
+            Box(Modifier.padding(start = SlotGap))
             trailing()
         }
     }
 }
 
-/** Tokens for [NoirTextField]. */
-object NoirTextFieldDefaults {
-    /** A minimum, not a height — the field grows with the type inside it. */
-    val MinHeight = NoirSpacing.touchTarget
-    val HorizontalPadding = 14.dp
-
-    /** Gap between the input and its leading or trailing slot. */
-    val SlotGap = 10.dp
-}
+/** A minimum, not a height — the field grows with the type inside it. */
+private val MinHeight = NoirSpacing.touchTarget
+private val HorizontalPadding = 16.dp
+/** Gap between the input and its leading or trailing slot. */
+private val SlotGap = 8.dp

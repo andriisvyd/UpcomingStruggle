@@ -29,7 +29,7 @@ fun NoirPipeDivider(
         text = List(pipes) { PIPE }.joinToString("\n"),
         style = NoirTheme.type.divider,
         color = MaterialTheme.colorScheme.onSurfaceVariant
-            .copy(alpha = NoirDividerDefaults.Alpha),
+            .copy(alpha = PipeAlpha),
         textAlign = TextAlign.Center,
         modifier = modifier,
     )
@@ -42,5 +42,6 @@ private const val PIPE = "|"
 object NoirDividerDefaults {
     /** Four marks run to roughly the height of an hour column. */
     const val Pipes = 4
-    const val Alpha = 0.75f
 }
+
+private const val PipeAlpha = 0.75f

@@ -23,9 +23,6 @@ import com.svyd.upcomingweather.core.designsystem.foundation.animationsEnabled
 
 /** Tokens for [NoirBlinkingCursor] and [NoirPlaceholder]. */
 object NoirPlaceholderDefaults {
-    /** On for this long, off for this long, hard steps — no fade. */
-    const val BlinkMillis = 530
-
     /** Sized in sp: the cursor stands in for a character, so it grows with the type. */
     val CursorWidth = 9.sp
     val CursorHeight = 15.sp
@@ -60,10 +57,10 @@ fun NoirBlinkingCursor(
                 // one-millisecond gap between the second and third keyframes steps it to 0 without
                 // an interpolated fade.
                 animation = keyframes {
-                    durationMillis = NoirPlaceholderDefaults.BlinkMillis * 2
+                    durationMillis = BlinkMillis * 2
                     1f at 0
-                    1f at NoirPlaceholderDefaults.BlinkMillis - 1
-                    0f at NoirPlaceholderDefaults.BlinkMillis
+                    1f at BlinkMillis - 1
+                    0f at BlinkMillis
                 },
                 repeatMode = RepeatMode.Restart,
             ),
@@ -100,3 +97,6 @@ fun NoirPlaceholder(
         modifier = modifier,
     )
 }
+
+/** On for this long, off for this long, hard steps — no fade. */
+private const val BlinkMillis = 530

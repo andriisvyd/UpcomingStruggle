@@ -35,7 +35,7 @@ fun NoirPrimaryAction(
     Box(
         modifier = modifier
             .clickable(role = Role.Button, onClick = onClick)
-            .heightIn(min = NoirActionDefaults.MinHeight)
+            .heightIn(min = MinHeight)
             .padding(horizontal = NoirSpacing.s),
         contentAlignment = Alignment.Center,
     ) {
@@ -57,7 +57,7 @@ fun NoirSecondaryAction(
     Box(
         modifier = modifier
             .clickable(role = Role.Button, onClick = onClick)
-            .heightIn(min = NoirActionDefaults.MinHeight)
+            .heightIn(min = MinHeight)
             .padding(horizontal = NoirSpacing.s),
         contentAlignment = Alignment.Center,
     ) {
@@ -102,16 +102,12 @@ fun NoirIconButton(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = if (pressed) pressedTint else tint,
-            modifier = Modifier.size(NoirActionDefaults.IconSize),
+            modifier = Modifier.size(IconSize),
         )
     }
 }
 
-/** Tokens for the three action primitives. */
-object NoirActionDefaults {
-    /** Text actions carry no fill, so this is the target rather than a visible button. */
-    val MinHeight = 44.dp
-
-    /** Glyphs are drawn at 24 dp inside a 48 dp target. */
-    val IconSize = 24.dp
-}
+/** Text actions carry no fill, so this is the target rather than a visible button. */
+private val MinHeight = 44.dp
+/** Glyphs are drawn at 24 dp inside a 48 dp target. */
+private val IconSize = 24.dp

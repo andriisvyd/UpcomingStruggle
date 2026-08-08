@@ -44,10 +44,10 @@ fun NoirTopBar(
             // The bar clears the status bar itself, so no screen has to think about it.
             .windowInsetsPadding(windowInsets)
             // A minimum, not a height: the status line has to be able to grow with the type.
-            .heightIn(min = NoirTopBarDefaults.MinHeight)
+            .heightIn(min = MinHeight)
             .padding(
-                horizontal = NoirTopBarDefaults.HorizontalPadding,
-                vertical = NoirTopBarDefaults.VerticalPadding,
+                horizontal = HorizontalPadding,
+                vertical = VerticalPadding,
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -85,11 +85,11 @@ object NoirTopBarDefaults {
         @Composable
         get() = WindowInsets.safeDrawing
             .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-
-    /** A minimum, not a height — the status line has to be able to grow with the type. */
-    val MinHeight = NoirSpacing.appBarHeight
-
-    /** The 48 dp icon slots supply the rest of the gutter. */
-    val HorizontalPadding = 6.dp
-    val VerticalPadding = 4.dp
 }
+
+/** A minimum, not a height — the status line has to be able to grow with the type. */
+private val MinHeight = NoirSpacing.appBarHeight
+
+/** The 48 dp icon slots supply the rest of the gutter. */
+private val HorizontalPadding = 4.dp
+private val VerticalPadding = 4.dp
