@@ -103,7 +103,7 @@ fun DashboardScreen(
             }
 
             when (state) {
-                is ForecastUiState.Loading -> ForecastSkeleton()
+                ForecastUiState.Loading -> ForecastSkeleton()
 
                 ForecastUiState.Empty -> NoirEmptyStateMessage(
                     glyph = NoirStateMark.Empty,
@@ -120,7 +120,7 @@ fun DashboardScreen(
                     )
                 }
 
-                is ForecastUiState.Error -> NoirEmptyStateMessage(
+                ForecastUiState.Error -> NoirEmptyStateMessage(
                     glyph = NoirStateMark.Error,
                     title = stringResource(R.string.forecast_error_title),
                     body = stringResource(R.string.forecast_error_body),
@@ -247,12 +247,16 @@ private fun DashboardContent(
     }
 }
 
-/** The app-bar status line: the city, plus the temperature once the hero has scrolled away. */
+/**
+ * The app-bar status line: the city, plus the temperature once the hero has scrolled away.
+ *
+ * The states that carry no forecast carry no place name either — where the name comes from is the
+ * data layer's business, and on the current-location path it arrives no earlier than the weather.
+ */
 @Composable
 private fun ForecastUiState.title(heroCollapsed: Boolean): String = when (this) {
-    ForecastUiState.Empty -> stringResource(R.string.forecast_app_title)
-    is ForecastUiState.Loading -> city
-    is ForecastUiState.Error -> city
+    ForecastUiState.Empty, ForecastUiState.Error -> stringResource(R.string.forecast_app_title)
+    ForecastUiState.Loading -> stringResource(R.string.forecast_loading_title)
     is ForecastUiState.Content -> if (heroCollapsed) "$city · ${hero.temperature}" else city
 }
 

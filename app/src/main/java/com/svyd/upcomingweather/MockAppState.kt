@@ -88,7 +88,7 @@ class MockAppState(
     private fun load(city: CityUi) {
         fetch?.cancel()
         fetch = scope.launch {
-            forecast = ForecastUiState.Loading(city.name)
+            forecast = ForecastUiState.Loading
             delay(FAKE_FETCH_MS)
             forecast = MockForecast.content.copy(city = city.name)
         }

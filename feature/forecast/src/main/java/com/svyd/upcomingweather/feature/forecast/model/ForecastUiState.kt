@@ -17,8 +17,8 @@ sealed interface ForecastUiState {
     /** First launch: no city has been picked yet. */
     data object Empty : ForecastUiState
 
-    /** A city is selected, nothing is cached, the first fetch is in flight. */
-    data class Loading(val city: String) : ForecastUiState
+    /** Nothing is cached and the first fetch is in flight. The place may not be named yet. */
+    data object Loading : ForecastUiState
 
     data class Content(
         val city: String,
@@ -32,7 +32,7 @@ sealed interface ForecastUiState {
     ) : ForecastUiState
 
     /** The fetch failed and there is nothing cached to fall back on. */
-    data class Error(val city: String) : ForecastUiState
+    data object Error : ForecastUiState
 }
 
 @Immutable

@@ -2,6 +2,8 @@
 <resources>
     <!-- App-bar status line before a city has been chosen. -->
     <string name="forecast_app_title">Upcoming Weather</string>
+    <!-- App-bar status line during the loading, when the place has no name yet. -->
+    <string name="forecast_loading_title">Picking up the trail…</string>
 
     <!-- Section headers. -->
     <string name="forecast_hours_header">From now on</string>
