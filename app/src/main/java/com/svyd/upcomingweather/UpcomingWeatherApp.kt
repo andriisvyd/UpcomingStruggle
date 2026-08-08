@@ -12,6 +12,7 @@ import androidx.navigation.toRoute
 import com.svyd.upcomingweather.feature.forecast.screen.DayDetailsScreen
 import com.svyd.upcomingweather.feature.forecast.screen.DashboardScreen
 import com.svyd.upcomingweather.feature.forecast.mock.MockForecast
+import com.svyd.upcomingweather.feature.search.SearchScreen
 import com.svyd.upcomingweather.navigation.DayDetailsRoute
 import com.svyd.upcomingweather.navigation.ForecastRoute
 import com.svyd.upcomingweather.navigation.SearchRoute
@@ -48,7 +49,21 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
         }
 
         composable<SearchRoute> {
-
+            SearchScreen(
+                state = appState.search,
+                onQueryChange = appState::query,
+                onClearQuery = appState::clearQuery,
+                onBack = navController::popBackStack,
+                onCitySelected = { city ->
+                    appState.selectCity(city)
+                    navController.popBackStack()
+                },
+                onUseCurrentLocation = {
+                    appState.traceMySteps()
+                    navController.popBackStack()
+                },
+                onRetry = appState::retrySearch,
+            )
         }
 
         composable<DayDetailsRoute> { entry ->
