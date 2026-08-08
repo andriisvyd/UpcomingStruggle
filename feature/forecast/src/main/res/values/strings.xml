@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App-bar status line before a city has been chosen. -->
+    <string name="forecast_app_title">Upcoming Weather</string>
+
+    <!-- Section headers. -->
+    <string name="forecast_hours_header">From now on</string>
+    <string name="forecast_days_header">Five days into the dark</string>
+
+    <!-- OpenWeather's terms ask for attribution. -->
+    <string name="forecast_attribution">Data by OpenWeather — don\'t shoot the messenger</string>
+
+    <!-- Hero. %1$s is a time of day, rendered bold. -->
+    <string name="forecast_updated_at">The trail was warm at %1$s</string>
+    <!-- %1$s is the feels-like temperature, already formatted with its degree sign. -->
+    <string name="forecast_feels_like">Felt like %1$s</string>
+    <!--
+      %1$s is the day's high, %2$s its low. Rendered bold.
+      Quoted: the spacing is deliberate, and XML collapses runs of whitespace without it.
+    -->
+    <string name="forecast_high_low">"H %1$s  L %2$s"</string>
+    <string name="forecast_meta_separator">"  ·  "</string>
+
+    <!-- First launch: no city has been selected yet. -->
+    <string name="forecast_empty_title">No city. No case.</string>
+    <string name="forecast_empty_body">Every case starts with a city. Name one, or let me trace your steps.</string>
+
+    <!-- The fetch failed and nothing is cached. -->
+    <string name="forecast_error_title">The forecast went dark.</string>
+    <string name="forecast_error_body">The wire\'s cut. Check your connection and we go again.</string>
+    <string name="forecast_error_action">Run it again</string>
+
+    <!-- Actions. -->
+    <string name="forecast_trace_action">Trace my steps</string>
+    <string name="forecast_name_city_action">name a city instead</string>
+    <string name="forecast_retry_action">Retry</string>
+
+    <!-- Spoken, never voiced: these are read aloud by a screen reader. -->
+    <string name="forecast_cd_location">Use current location</string>
+    <string name="forecast_cd_search">Search for a city</string>
+    <string name="forecast_cd_back">Back</string>
+    <string name="forecast_cd_offline">Offline</string>
+    <!-- %1$s is a day name, e.g. "Friday". -->
+    <string name="forecast_cd_open_day">Opens %1$s details</string>
+</resources>

@@ -58,6 +58,7 @@ fun Modifier.filmGrain(alpha: Float): Modifier = this.drawWithCache {
 @Composable
 fun NoirBackground(
     modifier: Modifier = Modifier,
+    drawGrain: Boolean = true,
     color: Color = MaterialTheme.colorScheme.background,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -66,7 +67,10 @@ fun NoirBackground(
         modifier = modifier
             .fillMaxSize()
             .background(color)
-            .then(remember(grainAlpha) { Modifier.filmGrain(grainAlpha) }),
+            .then(remember(grainAlpha) {
+                if (drawGrain) Modifier.filmGrain(grainAlpha)
+                else Modifier
+            }),
     ) {
         // Text that states no colour of its own reads this instead of the black default.
         CompositionLocalProvider(LocalContentColor provides contentColorFor(color)) {
