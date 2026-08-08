@@ -25,7 +25,7 @@ import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
  */
 @Composable
 fun NoirEmptyStateMessage(
-    glyph: String,
+    glyph: NoirStateMark,
     title: String,
     body: String,
     modifier: Modifier = Modifier,
@@ -38,14 +38,14 @@ fun NoirEmptyStateMessage(
             // scaffold scrolls rather than pushing the secondary action out of reach.
             .verticalScroll(rememberScrollState())
             .padding(
-                horizontal = NoirEmptyStateMessageDefaults.HorizontalPadding,
-                vertical = NoirEmptyStateMessageDefaults.VerticalPadding,
+                horizontal = HorizontalPadding,
+                vertical = VerticalPadding,
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(NoirSpacing.s),
     ) {
         Text(
-            text = glyph,
+            text = glyph.mark,
             style = NoirTheme.type.glyphHero.copy(
                 fontSize = GlyphSize,
                 lineHeight = GlyphSize,

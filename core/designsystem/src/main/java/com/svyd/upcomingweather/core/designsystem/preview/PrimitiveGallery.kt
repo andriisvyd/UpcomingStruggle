@@ -36,6 +36,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessag
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirMarkerBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirPlaceholder
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirRangeBar
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirStateMark
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTiltedStamp
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
@@ -175,7 +176,7 @@ private fun PrimitiveGallery() {
                     NoirHairlineDivider()
 
                     NoirEmptyStateMessage(
-                        glyph = "(?)",
+                        glyph = NoirStateMark.Empty,
                         title = "No city. No case.",
                         body = "Every case starts with a city. Name one, or let me trace your steps.",
                     ) {
