@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "UpcomingWeather"
 include(":app")
  
+include(":core:designsystem")
