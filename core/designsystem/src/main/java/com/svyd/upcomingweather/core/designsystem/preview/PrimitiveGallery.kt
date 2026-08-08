@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.icon.NoirIcons
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirBlinkingCursor
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirConditionGlyph
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirDotLeaderRow
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirPanel
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTextField
@@ -71,6 +73,41 @@ private fun PrimitiveGallery() {
                         NoirTiltedStamp("Rain", NoirTheme.inks.steel)
                         NoirTiltedStamp("Clear", NoirTheme.inks.sodium)
                         NoirTiltedStamp("Snow", NoirTheme.inks.tealIce)
+                    }
+
+                    // All nine, each in its own ink, at the three sizes they are drawn at.
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = NoirSpacing.s),
+                    ) {
+                        NoirCondition.entries.forEach { condition ->
+                            NoirConditionGlyph(condition, style = NoirTheme.type.glyphDay)
+                        }
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        NoirConditionGlyph(NoirCondition.Rain, style = NoirTheme.type.glyphHero)
+                        NoirConditionGlyph(NoirCondition.Rain, style = NoirTheme.type.glyphHour)
+                        NoirConditionGlyph(NoirCondition.Rain, style = NoirTheme.type.glyphDay)
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        NoirConditionGlyph(NoirCondition.Thunder, style = NoirTheme.type.glyphHero)
+                        NoirConditionGlyph(NoirCondition.Thunder, style = NoirTheme.type.glyphHour)
+                        NoirConditionGlyph(NoirCondition.Thunder, style = NoirTheme.type.glyphDay)
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        NoirConditionGlyph(NoirCondition.ClearNight, style = NoirTheme.type.glyphHero)
+                        NoirConditionGlyph(NoirCondition.ClearNight, style = NoirTheme.type.glyphHour)
+                        NoirConditionGlyph(NoirCondition.ClearNight, style = NoirTheme.type.glyphDay)
                     }
 
                     NoirDotLeaderRow(

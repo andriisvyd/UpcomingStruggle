@@ -16,12 +16,12 @@ import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
  * type into one of these; nothing here reaches back into a domain or feature module.
  */
 enum class NoirCondition(val mark: String) {
-    ClearDay("*"),
-    ClearNight(")"),
+    ClearDay(" * "),
+    ClearNight(" ) "),
     Partly("(*)"),
     Overcast("(~)"),
     Fog("==="),
-    Drizzle("//"),
+    Drizzle("// "),
     Rain("///"),
     Snow("***"),
     Thunder("/!\\"),
