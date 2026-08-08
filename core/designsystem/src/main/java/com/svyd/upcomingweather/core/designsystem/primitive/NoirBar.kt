@@ -125,7 +125,7 @@ internal fun markerBar(
 
 /** A bar assembled out of characters: [leading] and [trailing] are track, [body] is the mark. */
 @Immutable
-data class TypedBar(
+internal data class TypedBar(
     val leading: String,
     val body: String,
     val trailing: String,
