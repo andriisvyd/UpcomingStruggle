@@ -49,8 +49,8 @@ internal class DefaultDeviceLocationSource(
     /**
      * The reading, cut down to the precision it actually has.
      *
-     * A coarse fix is good to about a kilometre, so reporting five decimal places claims an accuracy
-     * the reading does not have. Rounding also makes two fixes from the same area equal, which is
+     * A coarse reading is good to about a kilometre, so reporting five decimal places claims an
+     * accuracy it does not have. Rounding also makes two readings from the same area equal, which is
      * what stops standing still from looking like moving.
      */
     private fun Coordinates.rounded(): Coordinates = Coordinates(
@@ -64,7 +64,7 @@ internal class DefaultDeviceLocationSource(
     }
 
     private companion object {
-        /** Two places, roughly a kilometre — the accuracy a coarse fix actually carries. */
+        /** Two places, roughly a kilometre — the accuracy a coarse reading actually carries. */
         const val COORDINATE_PLACES = 2
     }
 }

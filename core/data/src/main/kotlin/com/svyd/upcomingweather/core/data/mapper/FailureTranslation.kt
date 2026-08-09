@@ -5,7 +5,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 /**
- * Turns what the wire throws into what the domain expects.
+ * Turns what a network call throws into what the domain expects.
  *
  * Only two things can go wrong out here that the app has anything to say about: the network is not
  * there, or the provider is no help. Anything else — a decoding failure above all — is this app's

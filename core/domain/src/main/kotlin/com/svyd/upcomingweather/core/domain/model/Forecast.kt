@@ -13,7 +13,8 @@ import java.time.ZonedDateTime
 data class Forecast(
     /**
      * What to call the place this is for. The provider reports on a grid cell and has no idea what
-     * town sits under it, so the label is put here on the way through rather than read off the wire.
+     * town sits under it, so the label is put here on the way through rather than read from the
+     * response.
      */
     val label: PlaceLabel,
     val timeZone: ZoneId,

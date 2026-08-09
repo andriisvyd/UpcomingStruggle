@@ -4,7 +4,7 @@ package com.svyd.upcomingweather.core.domain.model
  * The quantities a forecast is made of, each carrying its unit in the type.
  *
  * A bare `Double` cannot say whether it is Celsius or Fahrenheit, and a bare `Int` cannot say
- * whether 40 is a humidity or a temperature. Conversion belongs to whoever reads the wire; past
+ * whether 40 is a humidity or a temperature. Conversion belongs to whoever reads the response; past
  * that boundary the unit is fixed and stated here.
  */
 @JvmInline

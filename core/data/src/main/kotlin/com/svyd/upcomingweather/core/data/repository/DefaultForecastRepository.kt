@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.flow
 /**
  * Answers from what was kept, then from the provider.
  *
- * There is no expiry: what was stored is worth drawing while the wire is busy, and the wire is
- * always asked. A stored forecast is a head start, not a substitute.
+ * There is no expiry: what was stored is worth drawing while the request is in flight, and the
+ * provider is always asked. A stored forecast is a head start, not a substitute.
  */
 internal class DefaultForecastRepository(
     private val api: ForecastApi,

@@ -48,7 +48,7 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 /**
  * Forecasts and place search live on different hosts, so there are two Retrofit instances over one
  * client. Everything below the repositories is internal to this module; what leaves it are the
- * domain's ports and the use cases built on them.
+ * domain's repository interfaces and the use cases built on them.
  */
 val dataModule = module {
 

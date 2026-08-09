@@ -5,6 +5,6 @@ import com.svyd.upcomingweather.core.domain.model.Coordinates
 /** Where the device is, as the platform reports it. */
 internal interface PositionProvider {
 
-    /** Null when there is no fix to be had. */
+    /** Null when the platform has no position to report. */
     suspend fun currentPosition(): Coordinates?
 }

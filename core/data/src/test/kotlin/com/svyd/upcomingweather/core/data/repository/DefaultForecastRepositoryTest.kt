@@ -52,7 +52,7 @@ class DefaultForecastRepositoryTest {
         assertTrue("fetched second", reads[1] is ForecastRead.Fresh)
     }
 
-    /** The point of keeping anything: something to draw when the wire is dead. */
+    /** The point of keeping anything: something to draw when the network is down. */
     @Test
     fun `what was kept is still reported when the fetch then fails`() = runTest {
         val kept = InMemoryForecasts()
@@ -61,7 +61,7 @@ class DefaultForecastRepositoryTest {
         val reads = mutableListOf<ForecastRead>()
         var thrown: Throwable? = null
         try {
-            repository(ApiFailing(IOException("no wire")), kept)
+            repository(ApiFailing(IOException("connection refused")), kept)
                 .forecast(budapest)
                 .collect { reads += it }
         } catch (failure: Throwable) {

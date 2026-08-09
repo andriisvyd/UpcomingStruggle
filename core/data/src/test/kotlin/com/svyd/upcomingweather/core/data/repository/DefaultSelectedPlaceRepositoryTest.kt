@@ -35,7 +35,7 @@ class DefaultSelectedPlaceRepositoryTest {
     }
 
     /**
-     * Two device fixes from the same area round to the same coordinates, so the same selection gets
+     * Two device readings from the same area round to the same coordinates, so the same selection gets
      * written twice. [ObserveForecast][com.svyd.upcomingweather.core.domain.usecase.ObserveForecast]
      * refetches on every emission, so standing still must not look like moving.
      */

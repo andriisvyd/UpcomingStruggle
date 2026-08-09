@@ -57,7 +57,7 @@ class ObserveForecastTest {
         assertEquals(listOf(budapest), world.forecasts.asked)
     }
 
-    /** The point of storing anything: something to draw before the wire answers. */
+    /** The point of storing anything: something to draw before the provider answers. */
     @Test
     fun `a stored forecast stands until the fetched one replaces it`() = runTest {
         val world = World(this)
@@ -77,10 +77,10 @@ class ObserveForecastTest {
         )
     }
 
-    /** Cache hit then a dead wire: what was stored stays, and the failure is reported over it. */
+    /** Something stored, then a failed request: what was stored stays, and the failure follows it. */
     @Test
     fun `a failed fetch after a stored one leaves the stored one standing`() = runTest {
-        val boom = IOException("no wire")
+        val boom = IOException("connection refused")
         val world = World(this)
         world.forecasts.cached = world.forecasts.fresh
         world.forecasts.failWith = boom
@@ -101,7 +101,7 @@ class ObserveForecastTest {
 
     @Test
     fun `a failed fetch with nothing stored is reported without ending the stream`() = runTest {
-        val boom = IOException("no wire")
+        val boom = IOException("connection refused")
         val world = World(this)
         world.forecasts.failWith = boom
         val updates = world.observe()

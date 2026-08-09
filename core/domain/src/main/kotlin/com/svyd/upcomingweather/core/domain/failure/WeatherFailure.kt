@@ -29,7 +29,7 @@ sealed class WeatherFailure(message: String, cause: Throwable? = null) : Excepti
     class LocationPermissionMissing(val askedBefore: Boolean) :
         WeatherFailure("location permission not granted, askedBefore=$askedBefore")
 
-    /** Permission is held, but there is no position: services off, or no fix. */
+    /** Permission is held, but there is no position: services off, or nothing reported. */
     class LocationUnavailable(cause: Throwable? = null) :
         WeatherFailure("no position available", cause)
 }

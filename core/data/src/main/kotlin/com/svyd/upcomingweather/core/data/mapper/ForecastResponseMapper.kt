@@ -26,8 +26,8 @@ import java.time.ZonedDateTime
 /**
  * Turns a forecast response into the domain's [Forecast].
  *
- * The label is carried in rather than read off the wire: the provider reports on a grid cell and
- * has no idea what town sits under it.
+ * The label is carried in rather than taken from the response: the provider reports on a grid cell
+ * and has no idea what town sits under it.
  */
 internal fun ForecastResponse.toForecast(label: PlaceLabel): Forecast {
     val zone = ZoneId.of(timezone)

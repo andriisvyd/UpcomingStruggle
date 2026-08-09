@@ -23,7 +23,7 @@ class DefaultDeviceLocationSourceTest {
         val thrown = runCatching { source(granted = false, positions = positions).currentPlace() }
 
         assertTrue(thrown.exceptionOrNull() is WeatherFailure.LocationPermissionMissing)
-        assertFalse("no fix should have been requested", positions.asked)
+        assertFalse("no position should have been requested", positions.asked)
     }
 
     /** The half of the picture this layer owns; the rationale flag is the caller's. */
@@ -37,7 +37,7 @@ class DefaultDeviceLocationSourceTest {
     }
 
     @Test
-    fun `no fix at all is reported as unavailable`() = runTest {
+    fun `no position at all is reported as unavailable`() = runTest {
         val thrown = source(position = null).failure()
 
         assertTrue(thrown is WeatherFailure.LocationUnavailable)
@@ -59,7 +59,7 @@ class DefaultDeviceLocationSourceTest {
         assertEquals(Coordinates(47.5, 19.04), place.coordinates)
     }
 
-    /** A coarse fix is good to about a kilometre, so the extra digits are not information. */
+    /** A coarse reading is good to about a kilometre, so the extra digits are not information. */
     @Test
     fun `the reading is cut to the precision it has`() = runTest {
         val place = source(position = reading).currentPlace()

@@ -24,8 +24,8 @@ internal class FusedPositionProvider(
         val cancellation = CancellationTokenSource()
 
         locations.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellation.token)
-            .addOnSuccessListener { fix ->
-                waiting.resume(fix?.let { Coordinates(it.latitude, it.longitude) })
+            .addOnSuccessListener { location ->
+                waiting.resume(location?.let { Coordinates(it.latitude, it.longitude) })
             }
             .addOnFailureListener { waiting.resumeWithException(WeatherFailure.LocationUnavailable(it)) }
 

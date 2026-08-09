@@ -8,7 +8,7 @@ import com.svyd.upcomingweather.core.domain.repository.PlaceRepository
  * Places matching what the user typed.
  *
  * A single character matches most of the world, so anything shorter than [MINIMUM_QUERY_LENGTH] is
- * not a search and never reaches the geocoder. How long to wait before asking is a separate
+ * not a search and never reaches the Geocoder. How long to wait before asking is a separate
  * question, and belongs to whoever watches the keystrokes.
  */
 class SearchPlaces(private val places: PlaceRepository) {

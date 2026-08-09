@@ -69,7 +69,7 @@ class SearchPlacesTest {
 
     @Test
     fun `a failing geocoder becomes a failed result`() = runTest {
-        val boom = IllegalStateException("no wire")
+        val boom = IllegalStateException("connection refused")
 
         val result = SearchPlaces(RecordingPlaces(failure = boom))("buda")
 
