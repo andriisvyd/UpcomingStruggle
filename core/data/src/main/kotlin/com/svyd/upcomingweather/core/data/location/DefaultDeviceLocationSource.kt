@@ -1,46 +1,36 @@
 package com.svyd.upcomingweather.core.data.location
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
-import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
-import com.svyd.upcomingweather.core.data.localsource.LocationPromptLocalSource
 import com.svyd.upcomingweather.core.data.location.geocoder.ReverseGeocoder
+import com.svyd.upcomingweather.core.data.location.permission.LocationPermission
+import com.svyd.upcomingweather.core.data.location.position.PositionProvider
+import com.svyd.upcomingweather.core.data.localsource.LocationPromptLocalSource
 import com.svyd.upcomingweather.core.domain.failure.WeatherFailure
 import com.svyd.upcomingweather.core.domain.model.Coordinates
 import com.svyd.upcomingweather.core.domain.model.PlaceLabel
 import com.svyd.upcomingweather.core.domain.model.SelectedPlace
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
 /**
- * Google's location client, and whatever can name what it returns.
+ * Where the device is, and what that place is called.
  *
  * Whether the permission is held is knowable here; whether the user has refused it for good is not,
  * because that needs an Activity. So the failure carries whether the prompt has ever been shown,
  * and the caller — which has the Activity — decides between prompting and sending them to settings.
  */
-internal class FusedLocationSource(
-    private val context: Context,
-    private val locations: FusedLocationProviderClient,
+internal class DefaultDeviceLocationSource(
+    private val permission: LocationPermission,
+    private val positions: PositionProvider,
     private val geocoder: ReverseGeocoder,
     private val prompts: LocationPromptLocalSource,
 ) : DeviceLocationSource {
 
     override suspend fun currentPlace(): SelectedPlace {
-        if (!hasPermission()) {
+        if (!permission.granted()) {
             throw WeatherFailure.LocationPermissionMissing(askedBefore = prompts.everAsked())
         }
 
-        val fix = currentLocation() ?: throw WeatherFailure.LocationUnavailable()
-        val reading = Coordinates(fix.latitude, fix.longitude)
+        val reading = positions.currentPosition() ?: throw WeatherFailure.LocationUnavailable()
 
         // Named from the reading itself, then rounded: a kilometre of slack is enough to pick the
         // wrong side of a district boundary, and the accurate figure is right here.
@@ -55,29 +45,6 @@ internal class FusedLocationSource(
      */
     private suspend fun labelFor(reading: Coordinates): PlaceLabel =
         geocoder.name(reading)?.let(PlaceLabel::Named) ?: PlaceLabel.NamelessCurrentLocation
-
-    /**
-     * Coarse only. A forecast is drawn for a grid cell and named after a town, so a precise fix
-     * would be asking for more than anything here can use.
-     */
-    private fun hasPermission(): Boolean =
-        ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        ) == PackageManager.PERMISSION_GRANTED
-
-    @Suppress("MissingPermission")
-    private suspend fun currentLocation(): Location? = suspendCancellableCoroutine { continuation ->
-        val cancellation = CancellationTokenSource()
-
-        locations.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellation.token)
-            .addOnSuccessListener { continuation.resume(it) }
-            .addOnFailureListener {
-                continuation.resumeWithException(WeatherFailure.LocationUnavailable(it))
-            }
-
-        continuation.invokeOnCancellation { cancellation.cancel() }
-    }
 
     /**
      * The reading, cut down to the precision it actually has.

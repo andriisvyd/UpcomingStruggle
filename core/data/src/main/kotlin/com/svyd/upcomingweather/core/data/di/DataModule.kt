@@ -9,7 +9,11 @@ import com.svyd.upcomingweather.core.data.cloud.ForecastApi
 import com.svyd.upcomingweather.core.data.cloud.SearchApi
 import com.svyd.upcomingweather.core.data.location.geocoder.AndroidReverseGeocoder
 import com.svyd.upcomingweather.core.data.location.DeviceLocationSource
-import com.svyd.upcomingweather.core.data.location.FusedLocationSource
+import com.svyd.upcomingweather.core.data.location.DefaultDeviceLocationSource
+import com.svyd.upcomingweather.core.data.location.permission.CoarseLocationPermission
+import com.svyd.upcomingweather.core.data.location.permission.LocationPermission
+import com.svyd.upcomingweather.core.data.location.position.FusedPositionProvider
+import com.svyd.upcomingweather.core.data.location.position.PositionProvider
 import com.svyd.upcomingweather.core.data.location.geocoder.ReverseGeocoder
 import com.svyd.upcomingweather.core.data.localsource.ForecastLocalSource
 import com.svyd.upcomingweather.core.data.localsource.LocationPromptLocalSource
@@ -77,10 +81,12 @@ val dataModule = module {
     single<LocationPromptLocalSource> { DataStoreLocationPromptSource(store = get()) }
 
     single<ReverseGeocoder> { AndroidReverseGeocoder(context = androidContext()) }
+    single<LocationPermission> { CoarseLocationPermission(context = androidContext()) }
+    single<PositionProvider> { FusedPositionProvider(locations = get()) }
     single<DeviceLocationSource> {
-        FusedLocationSource(
-            context = androidContext(),
-            locations = get(),
+        DefaultDeviceLocationSource(
+            permission = get(),
+            positions = get(),
             geocoder = get(),
             prompts = get(),
         )
