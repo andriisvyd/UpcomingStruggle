@@ -10,7 +10,7 @@ package com.svyd.upcomingweather.core.domain.model
 sealed interface PlaceLabel {
 
     /** Named, because the user searched for it or a Geocoder recognized the position. */
-    data class Named(val placeName: String) : PlaceLabel
+    data class Named(val name: String) : PlaceLabel
 
     /** The device's own position, which nothing could name. */
     data object NamelessCurrentLocation : PlaceLabel

@@ -19,7 +19,7 @@ class SelectPlaceTest {
     @Test
     fun `choosing a place selects it and files it in one go`() = runTest {
         val selection = InMemorySelection()
-        val recents = InMemoryRecents()
+        val recents = RecordingRecents()
 
         SelectPlace(selection, recents)(budapest).getOrThrow()
 
@@ -27,7 +27,7 @@ class SelectPlaceTest {
             SelectedPlace(PlaceLabel.Named("Budapest"), budapest.coordinates),
             selection.selected.first(),
         )
-        assertEquals(listOf(budapest), recents.recentPlaces())
+        assertEquals(listOf(budapest), recents.remembered)
     }
 
     /** Only what a forecast needs survives the selection: somewhere to ask, something to call it. */
@@ -35,7 +35,7 @@ class SelectPlaceTest {
     fun `the id, region and country are left behind`() = runTest {
         val selection = InMemorySelection()
 
-        SelectPlace(selection, InMemoryRecents())(londonOhio).getOrThrow()
+        SelectPlace(selection, RecordingRecents())(londonOhio).getOrThrow()
 
         assertEquals(
             SelectedPlace(PlaceLabel.Named("London"), londonOhio.coordinates),
@@ -43,44 +43,14 @@ class SelectPlaceTest {
         )
     }
 
+    /** How long the list is, is this use case's rule; keeping it in order is the store's. */
     @Test
-    fun `the newest place goes to the front`() = runTest {
-        val recents = InMemoryRecents(listOf(lisbon, tokyo))
+    fun `the store is told how many to keep`() = runTest {
+        val recents = RecordingRecents()
 
         SelectPlace(InMemorySelection(), recents)(budapest).getOrThrow()
 
-        assertEquals(listOf(budapest, lisbon, tokyo), recents.recentPlaces())
-    }
-
-    @Test
-    fun `choosing a place again moves it up rather than repeating it`() = runTest {
-        val recents = InMemoryRecents(listOf(lisbon, budapest, tokyo))
-
-        SelectPlace(InMemorySelection(), recents)(budapest).getOrThrow()
-
-        assertEquals(listOf(budapest, lisbon, tokyo), recents.recentPlaces())
-    }
-
-    @Test
-    fun `two places that share a name are still two places`() = runTest {
-        val recents = InMemoryRecents(listOf(londonEngland))
-
-        SelectPlace(InMemorySelection(), recents)(londonOhio).getOrThrow()
-
-        assertEquals(listOf(londonOhio, londonEngland), recents.recentPlaces())
-    }
-
-    @Test
-    fun `the oldest place falls off the end`() = runTest {
-        val full = List(SelectPlace.RECENTS_LIMIT) { index -> place("old-$index", "Place $index") }
-        val recents = InMemoryRecents(full)
-
-        SelectPlace(InMemorySelection(), recents)(budapest).getOrThrow()
-
-        val remembered = recents.recentPlaces()
-        assertEquals(SelectPlace.RECENTS_LIMIT, remembered.size)
-        assertEquals(budapest, remembered.first())
-        assertTrue("the oldest place should have been dropped", full.last() !in remembered)
+        assertEquals(listOf(SelectPlace.RECENTS_LIMIT), recents.limits)
     }
 
     @Test
@@ -88,7 +58,7 @@ class SelectPlaceTest {
         val boom = IllegalStateException("disk full")
         val recents = object : RecentPlacesRepository {
             override suspend fun recentPlaces(): List<Place> = emptyList()
-            override suspend fun save(places: List<Place>) = throw boom
+            override suspend fun remember(place: Place, limit: Int) = throw boom
         }
 
         val result = SelectPlace(InMemorySelection(), recents)(budapest)
@@ -106,13 +76,15 @@ class SelectPlaceTest {
         }
     }
 
-    private class InMemoryRecents(initial: List<Place> = emptyList()) : RecentPlacesRepository {
-        private var places = initial
+    private class RecordingRecents : RecentPlacesRepository {
+        val remembered = mutableListOf<Place>()
+        val limits = mutableListOf<Int>()
 
-        override suspend fun recentPlaces(): List<Place> = places
+        override suspend fun recentPlaces(): List<Place> = remembered
 
-        override suspend fun save(places: List<Place>) {
-            this.places = places
+        override suspend fun remember(place: Place, limit: Int) {
+            remembered += place
+            limits += limit
         }
     }
 
@@ -132,10 +104,8 @@ class SelectPlaceTest {
             coordinates = Coordinates(latitude, longitude),
         )
 
-        val budapest = place("3054643", "Budapest", "Budapest", latitude = 47.49835, longitude = 19.04045)
-        val lisbon = place("2267057", "Lisbon", country = "Portugal")
-        val tokyo = place("1850147", "Tokyo", country = "Japan")
-        val londonEngland = place("2643743", "London", "England", "United Kingdom")
+        val budapest =
+            place("3054643", "Budapest", "Budapest", latitude = 47.49835, longitude = 19.04045)
         val londonOhio = place("4517009", "London", "Ohio", "United States", 39.8865, -83.4483)
     }
 }

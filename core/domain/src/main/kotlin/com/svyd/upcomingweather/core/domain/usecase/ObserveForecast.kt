@@ -27,11 +27,12 @@ class ObserveForecast(
     private val selection: SelectedPlaceRepository,
     private val forecasts: ForecastRepository,
 ) {
+
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(refresh: Flow<Unit>): Flow<ForecastUpdate> =
         combine(
-            selection.selected,
-            refresh.onStart { emit(Unit) },
+            flow = selection.selected,
+            flow2 = refresh.onStart { emit(Unit) },
         ) { place, _ -> place }
             .flatMapLatest { place ->
                 if (place == null) flowOf(ForecastUpdate.NoPlace) else fetch(place)
@@ -42,7 +43,7 @@ class ObserveForecast(
      * for now and the fetched one settles it.
      */
     private fun fetch(place: SelectedPlace): Flow<ForecastUpdate> =
-        forecasts.forecast(place)
+        forecasts.forecast(at = place)
             .map { read ->
                 when (read) {
                     is ForecastRead.Cached -> ForecastUpdate.Stale(read.forecast)

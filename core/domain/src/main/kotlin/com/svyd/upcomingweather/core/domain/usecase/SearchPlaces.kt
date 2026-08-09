@@ -17,8 +17,8 @@ class SearchPlaces(private val places: PlaceRepository) {
         val trimmed = query.trim()
         if (trimmed.length < MINIMUM_QUERY_LENGTH) return Result.success(SearchOutcome.TooShort)
         return catching {
-            val found = places.search(trimmed)
-            if (found.isEmpty()) SearchOutcome.NoMatch else SearchOutcome.Found(found)
+            val found = places.search(query = trimmed)
+            if (found.isEmpty()) SearchOutcome.NoMatch else SearchOutcome.Found(places = found)
         }
     }
 
