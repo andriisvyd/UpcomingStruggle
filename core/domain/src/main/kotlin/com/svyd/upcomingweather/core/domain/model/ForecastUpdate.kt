@@ -15,7 +15,13 @@ sealed interface ForecastUpdate {
     /** A fetch is in flight. */
     data object Fetching : ForecastUpdate
 
-    /** A forecast, which carries the name of the place it is for. */
+    /**
+     * A stored forecast, drawn while a fresh one is still being fetched. Worth showing at once, and
+     * worth marking as not the last word.
+     */
+    data class Stale(val forecast: Forecast) : ForecastUpdate
+
+    /** A forecast, settled. Nothing further is on its way. */
     data class Ready(val forecast: Forecast) : ForecastUpdate
 
     /** The fetch failed. */
