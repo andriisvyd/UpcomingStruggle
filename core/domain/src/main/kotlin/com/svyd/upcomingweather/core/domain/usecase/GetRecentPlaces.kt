@@ -6,6 +6,7 @@ import com.svyd.upcomingweather.core.domain.repository.RecentPlacesRepository
 
 /** The places already looked at, most recent first. */
 class GetRecentPlaces(private val recents: RecentPlacesRepository) {
-
-    suspend operator fun invoke(): Result<List<Place>> = catching { recents.recentPlaces() }
+    suspend operator fun invoke(): Result<List<Place>> {
+        return catching { recents.recentPlaces() }
+    }
 }

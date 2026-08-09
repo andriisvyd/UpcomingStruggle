@@ -2,6 +2,7 @@ package com.svyd.upcomingweather.core.domain.usecase
 
 import com.svyd.upcomingweather.core.domain.model.Coordinates
 import com.svyd.upcomingweather.core.domain.model.Forecast
+import com.svyd.upcomingweather.core.domain.model.ForecastRead
 import com.svyd.upcomingweather.core.domain.model.ForecastUpdate
 import com.svyd.upcomingweather.core.domain.model.PlaceLabel
 import com.svyd.upcomingweather.core.domain.model.SelectedPlace
@@ -13,6 +14,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -38,7 +40,7 @@ class ObserveForecastTest {
     }
 
     @Test
-    fun `choosing a place fetches for it`() = runTest {
+    fun `with nothing stored, the fetched forecast settles it`() = runTest {
         val world = World(this)
         val updates = world.observe()
 
@@ -48,26 +50,57 @@ class ObserveForecastTest {
             listOf(
                 ForecastUpdate.NoPlace,
                 ForecastUpdate.Fetching,
-                ForecastUpdate.Ready(world.forecasts.result),
+                ForecastUpdate.Ready(world.forecasts.fresh),
             ),
             updates,
         )
         assertEquals(listOf(budapest), world.forecasts.asked)
     }
 
-    /** The name goes down with the request, so a mapper can put it on the forecast coming back. */
+    /** The point of storing anything: something to draw before the wire answers. */
     @Test
-    fun `the place is handed over whole, name and all`() = runTest {
+    fun `a stored forecast stands until the fetched one replaces it`() = runTest {
         val world = World(this)
-        world.observe()
+        world.forecasts.cached = world.forecasts.fresh
+        val updates = world.observe()
 
         world.selection.value = budapest
 
-        assertEquals(PlaceLabel.Named("Budapest"), world.forecasts.asked.single().label)
+        assertEquals(
+            listOf(
+                ForecastUpdate.NoPlace,
+                ForecastUpdate.Fetching,
+                ForecastUpdate.Stale(world.forecasts.fresh),
+                ForecastUpdate.Ready(world.forecasts.fresh),
+            ),
+            updates,
+        )
+    }
+
+    /** Cache hit then a dead wire: what was stored stays, and the failure is reported over it. */
+    @Test
+    fun `a failed fetch after a stored one leaves the stored one standing`() = runTest {
+        val boom = IOException("no wire")
+        val world = World(this)
+        world.forecasts.cached = world.forecasts.fresh
+        world.forecasts.failWith = boom
+        val updates = world.observe()
+
+        world.selection.value = budapest
+
+        assertEquals(
+            listOf(
+                ForecastUpdate.NoPlace,
+                ForecastUpdate.Fetching,
+                ForecastUpdate.Stale(world.forecasts.fresh),
+                ForecastUpdate.Failed(boom),
+            ),
+            updates,
+        )
     }
 
     @Test
-    fun `a failed fetch is reported without ending the stream`() = runTest {
+    fun `a failed fetch with nothing stored is reported without ending the stream`() = runTest {
         val boom = IOException("no wire")
         val world = World(this)
         world.forecasts.failWith = boom
@@ -79,9 +112,9 @@ class ObserveForecastTest {
         assertEquals(ForecastUpdate.Failed(boom), updates[2])
 
         world.forecasts.failWith = null
-        world.refreshes.emit(Unit)
+        world.refresh.emit(Unit)
 
-        assertEquals(ForecastUpdate.Ready(world.forecasts.result), updates.last())
+        assertEquals(ForecastUpdate.Ready(world.forecasts.fresh), updates.last())
     }
 
     @Test
@@ -90,18 +123,28 @@ class ObserveForecastTest {
         world.selection.value = budapest
         val updates = world.observe()
 
-        world.refreshes.emit(Unit)
+        world.refresh.emit(Unit)
 
         assertEquals(2, world.forecasts.asked.size)
         assertEquals(
             listOf(
                 ForecastUpdate.Fetching,
-                ForecastUpdate.Ready(world.forecasts.result),
+                ForecastUpdate.Ready(world.forecasts.fresh),
                 ForecastUpdate.Fetching,
-                ForecastUpdate.Ready(world.forecasts.result),
+                ForecastUpdate.Ready(world.forecasts.fresh),
             ),
             updates,
         )
+    }
+
+    @Test
+    fun `the place is handed over whole, name and all`() = runTest {
+        val world = World(this)
+        world.observe()
+
+        world.selection.value = budapest
+
+        assertEquals(PlaceLabel.Named("Budapest"), world.forecasts.asked.single().label)
     }
 
     @Test
@@ -122,7 +165,7 @@ class ObserveForecastTest {
                 ForecastUpdate.NoPlace,
                 ForecastUpdate.Fetching,
                 ForecastUpdate.Fetching,
-                ForecastUpdate.Ready(world.forecasts.result),
+                ForecastUpdate.Ready(world.forecasts.fresh),
             ),
             updates,
         )
@@ -131,7 +174,7 @@ class ObserveForecastTest {
     /** The inputs a test drives, and the collector that records what comes back out. */
     private class World(private val scope: TestScope) {
         val selection = MutableStateFlow<SelectedPlace?>(null)
-        val refreshes = MutableSharedFlow<Unit>()
+        val refresh = MutableSharedFlow<Unit>()
         val forecasts = RecordingForecasts()
 
         private val selectedPlaces = object : SelectedPlaceRepository {
@@ -147,7 +190,7 @@ class ObserveForecastTest {
         fun observe(): List<ForecastUpdate> {
             val updates = mutableListOf<ForecastUpdate>()
             scope.backgroundScope.launch(UnconfinedTestDispatcher(scope.testScheduler)) {
-                ObserveForecast(selectedPlaces, forecasts)(refreshes).toList(updates)
+                ObserveForecast(selectedPlaces, forecasts)(refresh).toList(updates)
             }
             return updates
         }
@@ -156,16 +199,18 @@ class ObserveForecastTest {
     private class RecordingForecasts : ForecastRepository {
         val asked = mutableListOf<SelectedPlace>()
         var failWith: Throwable? = null
+        var cached: Forecast? = null
         var gate: (suspend (SelectedPlace) -> Unit)? = null
 
-        val result: Forecast =
+        val fresh: Forecast =
             forecast(zone = ZoneId.of("Europe/Budapest"), from = LocalDate.of(2026, 8, 9), days = 2)
 
-        override suspend fun forecast(at: SelectedPlace): Forecast {
+        override fun forecast(at: SelectedPlace): Flow<ForecastRead> = flow {
             asked += at
+            cached?.let { emit(ForecastRead.Cached(it)) }
             gate?.invoke(at)
             failWith?.let { throw it }
-            return result
+            emit(ForecastRead.Fresh(fresh))
         }
     }
 

@@ -11,9 +11,9 @@ import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
  * Settles on a place the user named: it becomes the one being reported on, and it joins the ones
  * already looked at. The two happen together, so no caller can do one and forget the other.
  *
- * Recents run most recent first, each place once, and only [RECENTS_LIMIT] are kept — a list of
- * everywhere ever searched is not a shortcut. Choosing a place again moves it to the front rather
- * than adding it twice.
+ * Only [RECENTS_LIMIT] places are kept — a list of everywhere ever searched is not a shortcut. How
+ * that list is kept in order and free of duplicates is the store's business; how long it is, is
+ * this one's.
  */
 class SelectPlace(
     private val selection: SelectedPlaceRepository,
@@ -23,20 +23,18 @@ class SelectPlace(
     suspend operator fun invoke(place: Place): Result<Unit> = catching {
         selection.select(
             place = SelectedPlace(
-                label = PlaceLabel.Named(place.name),
-                coordinates = place.coordinates
+                label = PlaceLabel.Named(name = place.name),
+                coordinates = place.coordinates,
             )
         )
 
-        val remembered = recents.recentPlaces()
-            .filterNot { it.id == place.id }
-            .let { listOf(place) + it }
-            .take(RECENTS_LIMIT)
-
-        recents.save(remembered)
+        recents.remember(
+            place = place,
+            limit = RECENTS_LIMIT,
+        )
     }
 
     companion object {
-        const val RECENTS_LIMIT = 5
+        const val RECENTS_LIMIT = 15
     }
 }
