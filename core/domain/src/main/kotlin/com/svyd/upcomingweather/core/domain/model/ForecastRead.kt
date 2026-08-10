@@ -1,17 +1,19 @@
 package com.svyd.upcomingweather.core.domain.model
 
 /**
- * A forecast, and where it came from.
+ * A forecast, and how it was come by.
  *
- * A repository that answers from storage first emits twice: what it had, then what it fetched. The
- * two are the same shape and mean different things to a reader — the first is worth drawing
- * immediately and worth marking as not the last word.
+ * [Cached] and [Stale] both come from storage and differ only in age: one is inside the window the
+ * caller asked for, the other is past it with a fetch under way behind it.
  */
 sealed interface ForecastRead {
 
-    /** What was already stored. A [Fresh] may still be on its way. */
+    /** Stored, and young enough that nothing was fetched. Nothing follows it. */
     data class Cached(val forecast: Forecast) : ForecastRead
 
-    /** Straight off the cloud. */
+    /** Stored, but older than asked for. A [Fresh] follows unless the fetch fails. */
+    data class Stale(val forecast: Forecast) : ForecastRead
+
+    /** Straight from the provider. */
     data class Fresh(val forecast: Forecast) : ForecastRead
 }

@@ -5,6 +5,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
 import com.svyd.upcomingweather.feature.forecast.model.DayDetailsUiState
 import com.svyd.upcomingweather.feature.forecast.model.DayUi
 import com.svyd.upcomingweather.feature.forecast.model.ForecastUiState
+import com.svyd.upcomingweather.feature.forecast.model.Freshness
 import com.svyd.upcomingweather.feature.forecast.model.HeroUi
 import com.svyd.upcomingweather.feature.forecast.model.HourUi
 import com.svyd.upcomingweather.feature.forecast.model.OfflineUi
@@ -29,7 +30,7 @@ object MockForecast {
             feelsLike = "29°",
             high = "29°",
             low = "19°",
-            updatedAt = "10:12",
+            freshness = Freshness.Stale(refreshedAt = "10:12"),
         ),
         hours = listOf(
             hour("Now", NoirCondition.Partly, "27°"),
@@ -61,7 +62,7 @@ object MockForecast {
             feelsLike = "21°",
             high = "29°",
             low = "19°",
-            updatedAt = "22:41",
+            freshness = Freshness.Stale(refreshedAt = "22:41"),
         ),
         hours = listOf(
             hour("Now", NoirCondition.ClearNight, "22°"),
@@ -93,7 +94,7 @@ object MockForecast {
     val empty: ForecastUiState = ForecastUiState.Empty
 
     /** Frame H — a day opened from the list. Renders from the forecast above, never from a fetch. */
-    val friday: DayDetailsUiState = DayDetailsUiState(
+    val friday: DayDetailsUiState = DayDetailsUiState.Content(
         title = "Friday · Aug 7",
         hero = HeroUi(
             temperature = "27°",
@@ -103,7 +104,7 @@ object MockForecast {
             feelsLike = null,
             high = "27°",
             low = "18°",
-            updatedAt = "10:12",
+            freshness = Freshness.Stale(refreshedAt = "10:12"),
         ),
         logHeader = "Friday, step by step",
         slots = listOf(
@@ -216,7 +217,7 @@ private fun detailsFor(day: DayUi): DayDetailsUiState {
     val shape = listOf(0.1f, 0f, 0f, 0.3f, 0.75f, 1f, 0.8f, 0.35f)
     val times = listOf("00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00")
     val (title, logHeader) = dayTitles.getValue(day.date)
-    return DayDetailsUiState(
+    return DayDetailsUiState.Content(
         title = title,
         hero = HeroUi(
             temperature = day.max,
@@ -226,7 +227,7 @@ private fun detailsFor(day: DayUi): DayDetailsUiState {
             feelsLike = null,
             high = day.max,
             low = day.min,
-            updatedAt = "10:12",
+            freshness = Freshness.Stale(refreshedAt = "10:12"),
         ),
         logHeader = logHeader,
         slots = times.mapIndexed { index, time ->

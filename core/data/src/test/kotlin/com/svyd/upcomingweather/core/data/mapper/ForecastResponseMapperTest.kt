@@ -10,16 +10,22 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 class ForecastResponseMapperTest {
 
+    private companion object {
+        val RETRIEVED_AT: Instant = Instant.parse("2026-08-09T13:20:00Z")
+    }
+
+
     private val response: ForecastResponse =
         Fixtures.json.decodeFromString(Fixtures.read("forecast-budapest.json"))
 
-    private val forecast = response.toForecast(PlaceLabel.Named("Budapest"))
+    private val forecast = response.toForecast(PlaceLabel.Named("Budapest"), retrievedAt = RETRIEVED_AT)
 
     @Test
     fun `the label is carried in, since the response has no place in it`() {

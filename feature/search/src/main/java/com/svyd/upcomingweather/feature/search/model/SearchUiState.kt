@@ -12,7 +12,28 @@ import androidx.compose.runtime.Immutable
 data class SearchUiState(
     val query: String = "",
     val results: SearchResultsUi = SearchResultsUi.Recents(emptyList()),
+    /** Set once the device has been asked where it is and could not answer. */
+    val location: LocationNoticeUi? = null,
 )
+
+/**
+ * Why letting the phone name the city did not work.
+ *
+ * Only reasons a reader can act on. Anything else is a defect rather than something to explain, and
+ * a row that reported it would offer no way forward.
+ */
+@Immutable
+sealed interface LocationNoticeUi {
+
+    /**
+     * Location was refused. [canAskAgain] is what the platform will still do: while it is true the
+     * system prompt appears on another attempt, and once it is false only settings can reverse it.
+     */
+    data class Refused(val canAskAgain: Boolean) : LocationNoticeUi
+
+    /** Location was granted, and the device still could not say where it is. */
+    data object Unavailable : LocationNoticeUi
+}
 
 @Immutable
 sealed interface SearchResultsUi {
@@ -37,7 +58,7 @@ sealed interface SearchResultsUi {
 
 @Immutable
 data class CityUi(
-    /** Stable key for the row, and what the caller gets back on a tap. */
+    /** Stable key for the row. Opaque to the screen, which never reads it. */
     val id: String,
     val name: String,
     /** "California, United States" — the state is dropped when the API returns none. */

@@ -1,5 +1,6 @@
 package com.svyd.upcomingweather.core.domain.model
 
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -7,8 +8,9 @@ import java.time.ZonedDateTime
 /**
  * Everything known about the weather at one place.
  *
- * Times are carried in the place's own zone rather than the device's, so a forecast for Tokyo read
- * from Budapest still says when the sun comes up in Tokyo.
+ * Whatever the forecast describes is carried in the place's own zone, so a forecast for Tokyo read
+ * from Budapest still says when the sun comes up in Tokyo. [retrievedAt] is the exception, because
+ * it did not happen there.
  */
 data class Forecast(
     /**
@@ -17,7 +19,13 @@ data class Forecast(
      * response.
      */
     val label: PlaceLabel,
+    /** The place's own zone. Everything the forecast describes happens there. */
     val timeZone: ZoneId,
+    /**
+     * When this forecast was obtained. A moment rather than a local time: it happened to the reader,
+     * not at the place, so it is theirs to render in whatever zone they are in.
+     */
+    val retrievedAt: Instant,
     val current: Conditions,
     /** Today first, one entry per day. */
     val days: List<DayForecast>,

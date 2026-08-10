@@ -95,7 +95,8 @@ class DataStoreForecastSourceTest {
         ?.let { DataStoreForecastSource(folder.preferences(this), Fixtures.json, limit = it) }
         ?: DataStoreForecastSource(folder.preferences(this), Fixtures.json)
 
-    private fun forecast() = StoredForecast(label = StoredLabel("Budapest"), response = response)
+    private fun forecast() =
+        StoredForecast(label = StoredLabel("Budapest"), response = response, savedAt = 0L)
 
     private companion object {
         val budapest = Coordinates(47.5, 19.04)

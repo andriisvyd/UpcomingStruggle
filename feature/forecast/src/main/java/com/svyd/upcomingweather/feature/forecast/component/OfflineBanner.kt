@@ -52,7 +52,7 @@ private fun OfflineBannerPreview() {
     UpcomingWeatherTheme {
         NoirBackground(drawGrain = false) {
             OfflineBanner(
-                offline = OfflineUi("Offline — cold trail from 09:12"),
+                offline = OfflineUi("Offline — showing what was kept"),
                 onRetry = {},
                 modifier = Modifier.padding(NoirSpacing.gutter),
             )

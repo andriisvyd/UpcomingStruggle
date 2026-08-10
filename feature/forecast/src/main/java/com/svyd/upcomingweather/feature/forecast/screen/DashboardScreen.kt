@@ -2,15 +2,12 @@ package com.svyd.upcomingweather.feature.forecast.screen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -18,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
@@ -37,6 +33,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessag
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
 import com.svyd.upcomingweather.feature.forecast.R
+import com.svyd.upcomingweather.feature.forecast.component.Attribution
 import com.svyd.upcomingweather.feature.forecast.component.DayRow
 import com.svyd.upcomingweather.feature.forecast.component.ForecastSkeleton
 import com.svyd.upcomingweather.feature.forecast.component.HeroBlock
@@ -45,6 +42,7 @@ import com.svyd.upcomingweather.feature.forecast.component.OfflineBanner
 import com.svyd.upcomingweather.feature.forecast.component.ReadingLedger
 import com.svyd.upcomingweather.feature.forecast.model.DayUi
 import com.svyd.upcomingweather.feature.forecast.model.ForecastUiState
+import com.svyd.upcomingweather.feature.forecast.model.Freshness
 import com.svyd.upcomingweather.feature.forecast.model.HeroUi
 import com.svyd.upcomingweather.feature.forecast.model.HourUi
 import com.svyd.upcomingweather.feature.forecast.model.ReadingUi
@@ -72,6 +70,7 @@ fun DashboardScreen(
     onRefresh: () -> Unit = {},
     onRetry: () -> Unit = {},
     onDayClick: (date: String) -> Unit = {},
+    onOpenSettings: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val heroCollapsed by remember {
@@ -114,6 +113,52 @@ fun DashboardScreen(
                         stringResource(R.string.forecast_trace_action),
                         onClick = onLocationClick
                     )
+                    NoirSecondaryAction(
+                        stringResource(R.string.forecast_name_city_action),
+                        onClick = onSearchClick
+                    )
+                }
+
+                ForecastUiState.LocationUnavailable -> NoirEmptyStateMessage(
+                    glyph = NoirStateMark.Error,
+                    title = stringResource(R.string.forecast_no_position_title),
+                    body = stringResource(R.string.forecast_no_position_body),
+                ) {
+                    NoirPrimaryAction(
+                        stringResource(R.string.forecast_no_position_action),
+                        onClick = onLocationClick,
+                    )
+                    NoirSecondaryAction(
+                        stringResource(R.string.forecast_name_city_action),
+                        onClick = onSearchClick
+                    )
+                }
+
+                is ForecastUiState.LocationRefused -> NoirEmptyStateMessage(
+                    glyph = NoirStateMark.Empty,
+                    title = stringResource(R.string.forecast_refused_title),
+                    body = stringResource(
+                        if (state.canAskAgain) {
+                            R.string.forecast_refused_again_body
+                        } else {
+                            R.string.forecast_refused_body
+                        },
+                    ),
+                ) {
+                    // While the platform will still offer the prompt, asking again is the way
+                    // through; once it stops, only settings can reverse the refusal. A button that
+                    // cannot work is worse than none, so only one of the two is ever drawn.
+                    if (state.canAskAgain) {
+                        NoirPrimaryAction(
+                            stringResource(R.string.forecast_refused_again_action),
+                            onClick = onLocationClick,
+                        )
+                    } else {
+                        NoirPrimaryAction(
+                            stringResource(R.string.forecast_refused_action),
+                            onClick = onOpenSettings,
+                        )
+                    }
                     NoirSecondaryAction(
                         stringResource(R.string.forecast_name_city_action),
                         onClick = onSearchClick
@@ -230,18 +275,7 @@ private fun DashboardContent(
             }
 
             item(key = ATTRIBUTION_KEY) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            top = AttributionGap,
-                            bottom = NoirSpacing.section,
-                        ),
-                    text = stringResource(R.string.forecast_attribution),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                Attribution(Modifier.padding(horizontal = NoirSpacing.gutter))
             }
         }
     }
@@ -255,7 +289,11 @@ private fun DashboardContent(
  */
 @Composable
 private fun ForecastUiState.title(heroCollapsed: Boolean): String = when (this) {
-    ForecastUiState.Empty, ForecastUiState.Error -> stringResource(R.string.forecast_app_title)
+    ForecastUiState.Empty,
+    ForecastUiState.Error,
+    is ForecastUiState.LocationRefused,
+    ForecastUiState.LocationUnavailable,
+        -> stringResource(R.string.forecast_app_title)
     ForecastUiState.Loading -> stringResource(R.string.forecast_loading_title)
     is ForecastUiState.Content -> if (heroCollapsed) "$city · ${hero.temperature}" else city
 }
@@ -275,7 +313,7 @@ private fun DashboardScreenPreview() {
                     feelsLike = "29°",
                     high = "29°",
                     low = "19°",
-                    updatedAt = "10:12",
+                    freshness = Freshness.Stale(refreshedAt = "10:12"),
                 ),
                 hours = listOf(
                     HourUi(
@@ -373,4 +411,3 @@ private fun DashboardScreenPreview() {
 }
 
 private val LedgerGap = 8.dp
-private val AttributionGap = 16.dp

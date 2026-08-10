@@ -18,6 +18,7 @@ import com.svyd.upcomingweather.core.domain.model.Speed
 import com.svyd.upcomingweather.core.domain.model.Temperature
 import com.svyd.upcomingweather.core.domain.model.Wind
 import com.svyd.upcomingweather.core.domain.model.remarkFor
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -26,16 +27,17 @@ import java.time.ZonedDateTime
 /**
  * Turns a forecast response into the domain's [Forecast].
  *
- * The label is carried in rather than taken from the response: the provider reports on a grid cell
- * and has no idea what town sits under it.
+ * The label and [retrievedAt] are carried in rather than taken from the response: the provider
+ * reports on a grid cell, so it knows neither what town sits under it nor when anyone asked.
  */
-internal fun ForecastResponse.toForecast(label: PlaceLabel): Forecast {
+internal fun ForecastResponse.toForecast(label: PlaceLabel, retrievedAt: Instant): Forecast {
     val zone = ZoneId.of(timezone)
     val hoursByDate = hourly.toHours(zone).groupBy { it.time.toLocalDate() }
 
     return Forecast(
         label = label,
         timeZone = zone,
+        retrievedAt = retrievedAt,
         current = current.toConditions(zone),
         days = daily.toDays(zone, hoursByDate),
     )

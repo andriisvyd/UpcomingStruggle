@@ -8,6 +8,8 @@ import kotlinx.serialization.Serializable
 internal data class StoredForecast(
     val label: StoredLabel,
     val response: ForecastResponse,
+    /** When it was fetched, as epoch milliseconds. Read back to decide whether it is still good. */
+    val savedAt: Long,
 )
 
 /** The domain's label in a form that can be written down. */

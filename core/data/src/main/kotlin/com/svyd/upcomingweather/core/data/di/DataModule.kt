@@ -10,7 +10,7 @@ import com.svyd.upcomingweather.core.data.cloud.SearchApi
 import com.svyd.upcomingweather.core.data.location.geocoder.AndroidReverseGeocoder
 import com.svyd.upcomingweather.core.data.location.DeviceLocationSource
 import com.svyd.upcomingweather.core.data.location.DefaultDeviceLocationSource
-import com.svyd.upcomingweather.core.data.location.permission.CoarseLocationPermission
+import com.svyd.upcomingweather.core.data.location.permission.AndroidLocationPermission
 import com.svyd.upcomingweather.core.data.location.permission.LocationPermission
 import com.svyd.upcomingweather.core.data.location.position.FusedPositionProvider
 import com.svyd.upcomingweather.core.data.location.position.PositionProvider
@@ -24,19 +24,24 @@ import com.svyd.upcomingweather.core.data.localsource.datastore.DataStoreLocatio
 import com.svyd.upcomingweather.core.data.localsource.datastore.DataStoreRecentsSource
 import com.svyd.upcomingweather.core.data.localsource.datastore.DataStoreSelectionSource
 import com.svyd.upcomingweather.core.data.repository.DefaultForecastRepository
+import com.svyd.upcomingweather.core.data.repository.DefaultLocationPromptRepository
 import com.svyd.upcomingweather.core.data.repository.DefaultPlaceRepository
 import com.svyd.upcomingweather.core.data.repository.DefaultRecentPlacesRepository
 import com.svyd.upcomingweather.core.data.repository.DefaultSelectedPlaceRepository
 import com.svyd.upcomingweather.core.domain.repository.ForecastRepository
+import com.svyd.upcomingweather.core.domain.repository.LocationPromptRepository
 import com.svyd.upcomingweather.core.domain.repository.PlaceRepository
 import com.svyd.upcomingweather.core.domain.repository.RecentPlacesRepository
 import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
 import com.svyd.upcomingweather.core.domain.usecase.GetRecentPlaces
+import com.svyd.upcomingweather.core.domain.usecase.ObserveDay
 import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
+import com.svyd.upcomingweather.core.domain.usecase.RecordLocationPrompt
 import com.svyd.upcomingweather.core.domain.usecase.SearchPlaces
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
 import com.svyd.upcomingweather.core.domain.usecase.SelectPlace
 import kotlinx.serialization.json.Json
+import java.time.Clock
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
@@ -81,7 +86,7 @@ val dataModule = module {
     single<LocationPromptLocalSource> { DataStoreLocationPromptSource(store = get()) }
 
     single<ReverseGeocoder> { AndroidReverseGeocoder(context = androidContext()) }
-    single<LocationPermission> { CoarseLocationPermission(context = androidContext()) }
+    single<LocationPermission> { AndroidLocationPermission(context = androidContext()) }
     single<PositionProvider> { FusedPositionProvider(locations = get()) }
     single<DeviceLocationSource> {
         DefaultDeviceLocationSource(
@@ -92,16 +97,22 @@ val dataModule = module {
         )
     }
 
-    single<ForecastRepository> { DefaultForecastRepository(api = get(), forecasts = get()) }
+    single<Clock> { Clock.systemUTC() }
+    single<ForecastRepository> {
+        DefaultForecastRepository(api = get(), forecasts = get(), clock = get())
+    }
+    single<LocationPromptRepository> { DefaultLocationPromptRepository(prompts = get()) }
     single<PlaceRepository> { DefaultPlaceRepository(api = get(), locationSource = get()) }
     single<SelectedPlaceRepository> { DefaultSelectedPlaceRepository(selections = get()) }
     single<RecentPlacesRepository> { DefaultRecentPlacesRepository(recents = get()) }
 
     factory { ObserveForecast(selection = get(), forecasts = get()) }
+    factory { ObserveDay(forecasts = get()) }
     factory { SearchPlaces(places = get()) }
     factory { SelectPlace(selection = get(), recents = get()) }
     factory { SelectCurrentPlace(places = get(), selection = get()) }
     factory { GetRecentPlaces(recents = get()) }
+    factory { RecordLocationPrompt(prompts = get()) }
 }
 
 private fun retrofit(client: OkHttpClient, json: Json, baseUrl: String): Retrofit =

@@ -51,6 +51,7 @@ private fun PreviewSearch(state: SearchUiState) {
         onBack = {},
         onCitySelected = {},
         onUseCurrentLocation = {},
+        onOpenSettings = {},
         onRetry = {},
     )
 }

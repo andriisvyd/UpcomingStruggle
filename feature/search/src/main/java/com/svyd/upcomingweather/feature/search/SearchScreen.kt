@@ -25,6 +25,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSecondaryAction
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.feature.search.component.CityRow
+import com.svyd.upcomingweather.feature.search.component.LocationNotice
 import com.svyd.upcomingweather.feature.search.component.LocationRow
 import com.svyd.upcomingweather.feature.search.component.RecentsHeader
 import com.svyd.upcomingweather.feature.search.model.CityUi
@@ -45,6 +46,7 @@ fun SearchScreen(
     onBack: () -> Unit,
     onCitySelected: (CityUi) -> Unit,
     onUseCurrentLocation: () -> Unit,
+    onOpenSettings: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -99,6 +101,13 @@ fun SearchScreen(
             ) {
                 item(key = "location") {
                     LocationRow(onClick = onUseCurrentLocation)
+                    state.location?.let { notice ->
+                        LocationNotice(
+                            notice = notice,
+                            onAskAgain = onUseCurrentLocation,
+                            onOpenSettings = onOpenSettings,
+                        )
+                    }
                     NoirHairlineDivider(Modifier.padding(vertical = DividerGap))
                 }
 

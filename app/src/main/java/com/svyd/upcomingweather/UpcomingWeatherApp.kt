@@ -5,28 +5,29 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.svyd.upcomingweather.feature.forecast.screen.DayDetailsScreen
-import com.svyd.upcomingweather.feature.forecast.screen.DashboardScreen
-import com.svyd.upcomingweather.feature.forecast.mock.MockForecast
-import com.svyd.upcomingweather.feature.search.SearchScreen
+import java.time.LocalDate
+import com.svyd.upcomingweather.feature.forecast.screen.DashboardRoute
+import com.svyd.upcomingweather.feature.forecast.screen.DayDetailsRoute
+import com.svyd.upcomingweather.feature.search.SearchRoute as SearchDestination
 import com.svyd.upcomingweather.navigation.DayDetailsRoute
 import com.svyd.upcomingweather.navigation.ForecastRoute
 import com.svyd.upcomingweather.navigation.SearchRoute
 
 /**
- * The whole app: one host, three destinations, and the state object both screens read from.
+ * The whole app: one host, three destinations.
  *
- * Everything below this function is stateless — the screens take a state and hand events back,
- * and this is where those events turn into state changes and navigation.
+ * Nothing but navigation happens here. Each destination owns its own state, and the choice of city
+ * travels between them through the domain rather than through this function.
  */
 @Composable
 fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val appState = rememberMockAppState()
+    val context = LocalContext.current
 
     NavHost(
         navController = navController,
@@ -38,38 +39,25 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
         exitTransition = { fadeOut() },
     ) {
         composable<ForecastRoute> {
-            DashboardScreen(
-                state = appState.forecast,
-                onLocationClick = appState::traceMySteps,
+            DashboardRoute(
                 onSearchClick = { navController.navigate(SearchRoute) },
-                onRefresh = appState::refresh,
-                onRetry = appState::retry,
                 onDayClick = { date -> navController.navigate(DayDetailsRoute(date)) },
+                onOpenSettings = { context.openAppSettings() },
             )
         }
 
         composable<SearchRoute> {
-            SearchScreen(
-                state = appState.search,
-                onQueryChange = appState::query,
-                onClearQuery = appState::clearQuery,
+            SearchDestination(
+                onDone = { navController.popBackStack() },
                 onBack = navController::popBackStack,
-                onCitySelected = { city ->
-                    appState.selectCity(city)
-                    navController.popBackStack()
-                },
-                onUseCurrentLocation = {
-                    appState.traceMySteps()
-                    navController.popBackStack()
-                },
-                onRetry = appState::retrySearch,
+                onOpenSettings = { context.openAppSettings() },
             )
         }
 
         composable<DayDetailsRoute> { entry ->
             val route = entry.toRoute<DayDetailsRoute>()
-            DayDetailsScreen(
-                state = MockForecast.dayDetails(route.date),
+            DayDetailsRoute(
+                date = LocalDate.parse(route.date),
                 onBack = navController::popBackStack,
             )
         }

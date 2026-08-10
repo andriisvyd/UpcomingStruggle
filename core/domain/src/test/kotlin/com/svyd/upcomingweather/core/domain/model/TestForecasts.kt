@@ -1,5 +1,6 @@
 package com.svyd.upcomingweather.core.domain.model
 
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -15,9 +16,11 @@ internal fun forecast(
     days: Int,
     hoursPerDay: Int = 24,
     label: PlaceLabel = PlaceLabel.Named("Budapest"),
+    retrievedAt: Instant = Instant.parse("2026-08-09T12:00:00Z"),
 ): Forecast = Forecast(
     label = label,
     timeZone = zone,
+    retrievedAt = retrievedAt,
     current = conditions(from.atStartOfDay(zone)),
     days = (0 until days).map { offset ->
         dayForecast(zone, from.plusDays(offset.toLong()), hoursPerDay)

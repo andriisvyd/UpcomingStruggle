@@ -29,7 +29,9 @@ import com.svyd.upcomingweather.core.designsystem.foundation.scaledByFont
 import com.svyd.upcomingweather.core.designsystem.icon.NoirIcons
 import com.svyd.upcomingweather.core.designsystem.preview.NoirScreenPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessage
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirHairlineDivider
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirStateMark
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirIconButton
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBarTitle
@@ -39,9 +41,12 @@ import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
 import com.svyd.upcomingweather.feature.forecast.R
+import com.svyd.upcomingweather.feature.forecast.component.Attribution
+import com.svyd.upcomingweather.feature.forecast.component.ForecastSkeleton
 import com.svyd.upcomingweather.feature.forecast.component.HeroBlock
 import com.svyd.upcomingweather.feature.forecast.component.ReadingLedger
 import com.svyd.upcomingweather.feature.forecast.model.DayDetailsUiState
+import com.svyd.upcomingweather.feature.forecast.model.Freshness
 import com.svyd.upcomingweather.feature.forecast.model.HeroUi
 import com.svyd.upcomingweather.feature.forecast.model.ReadingUi
 import com.svyd.upcomingweather.feature.forecast.model.SlotUi
@@ -49,8 +54,8 @@ import com.svyd.upcomingweather.feature.forecast.model.SlotUi
 /**
  * One day, opened from a row of the five-day list.
  *
- * It renders from the forecast that is already in hand — no fetch, no loading state, no error
- * state, and it works offline.
+ * Reads from the same forecast the list was built from, so a stored one is drawn at once and
+ * replaced when the fetch behind it lands.
  */
 @Composable
 fun DayDetailsScreen(
@@ -69,49 +74,61 @@ fun DayDetailsScreen(
                     )
                 },
             ) {
-                NoirTopBarTitle(state.title)
+                NoirTopBarTitle(state.topBarTitle())
             }
 
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    // After the scroll, so it pads the content rather than the viewport: the log
-                    // passes under the navigation bar and still ends clear of it.
-                    .padding(NoirInsetDefaults.scrollableContentPadding)
-                    .padding(horizontal = NoirSpacing.gutter),
-            ) {
-                HeroBlock(hero = state.hero)
+            when (state) {
+                DayDetailsUiState.Loading -> ForecastSkeleton()
 
-                NoirSectionStamp(
-                    modifier = Modifier.padding(
-                        top = NoirSpacing.section,
-                        bottom = NoirSpacing.m,
-                    ),
-                    text = state.logHeader,
+                DayDetailsUiState.Unavailable -> NoirEmptyStateMessage(
+                    glyph = NoirStateMark.Empty,
+                    title = stringResource(R.string.forecast_day_unavailable_title),
+                    body = stringResource(R.string.forecast_day_unavailable_body),
                 )
 
-                state.slots.forEachIndexed { index, slot ->
-                    if (index > 0) NoirHairlineDivider()
-                    DaySlotRow(slot)
-                }
-
-                ReadingLedger(
-                    readings = state.readings,
-                    modifier = Modifier.padding(top = LedgerGap),
-                )
-
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = AttributionGap, bottom = NoirSpacing.section),
-                    text = stringResource(R.string.forecast_attribution),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                is DayDetailsUiState.Content -> DayLog(state)
             }
         }
     }
+}
+
+@Composable
+private fun DayLog(state: DayDetailsUiState.Content) {
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            // After the scroll, so it pads the content rather than the viewport: the log passes
+            // under the navigation bar and still ends clear of it.
+            .padding(NoirInsetDefaults.scrollableContentPadding)
+            .padding(horizontal = NoirSpacing.gutter),
+    ) {
+        HeroBlock(hero = state.hero)
+
+        NoirSectionStamp(
+            modifier = Modifier.padding(top = NoirSpacing.section, bottom = NoirSpacing.m),
+            text = state.logHeader,
+        )
+
+        state.slots.forEachIndexed { index, slot ->
+            if (index > 0) NoirHairlineDivider()
+            DaySlotRow(slot)
+        }
+
+        ReadingLedger(
+            readings = state.readings,
+            modifier = Modifier.padding(top = LedgerGap),
+        )
+
+        Attribution(Modifier.padding(horizontal = NoirSpacing.gutter))
+    }
+}
+
+/** The app-bar line: the day being shown, or the app's own name when there is none. */
+@Composable
+private fun DayDetailsUiState.topBarTitle(): String = when (this) {
+    is DayDetailsUiState.Content -> title
+    DayDetailsUiState.Loading, DayDetailsUiState.Unavailable ->
+        stringResource(R.string.forecast_app_title)
 }
 
 /** One 3-hour slot of the day log, its temperature marked on the day's own span. */
@@ -168,7 +185,7 @@ fun DaySlotRow(
 private fun DayDetailsScreenPreview() {
     UpcomingWeatherTheme {
         DayDetailsScreen(
-            state = DayDetailsUiState(
+            state = DayDetailsUiState.Content(
                 title = "Friday · Aug 7",
                 hero = HeroUi(
                     temperature = "27°",
@@ -177,7 +194,7 @@ private fun DayDetailsScreenPreview() {
                     line = "Bloody awful rain, cold as a debt.",
                     high = "27°",
                     low = "18°",
-                    updatedAt = "10:12",
+                    freshness = Freshness.Stale(refreshedAt = "10:12"),
                 ),
                 logHeader = "Friday, step by step",
                 slots = listOf(
@@ -255,7 +272,6 @@ private fun DayDetailsScreenPreview() {
 }
 
 private val LedgerGap = 8.dp
-private val AttributionGap = 16.dp
 private val TimeWidth = 48.dp
 private val TempWidth = 36.dp
 private val GlyphCell = 24.dp

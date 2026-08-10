@@ -24,6 +24,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
+import java.time.Duration
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -137,6 +138,46 @@ class ObserveForecastTest {
         )
     }
 
+    /** Arriving at a place accepts what is stored if it is young enough; pulling never does. */
+    @Test
+    fun `a new place honours the age, a refresh overrides it`() = runTest {
+        val world = World(this)
+        world.selection.value = budapest
+        world.observe()
+
+        world.refresh.emit(Unit)
+
+        assertEquals(listOf(false, true), world.forecasts.forced)
+    }
+
+    @Test
+    fun `the age the caller considers good is passed down`() = runTest {
+        val world = World(this)
+        world.observe()
+
+        world.selection.value = budapest
+
+        assertEquals(listOf(ObserveForecast.MAX_AGE), world.forecasts.ages)
+    }
+
+    @Test
+    fun `a stored forecast still within its age settles without waiting`() = runTest {
+        val world = World(this)
+        world.forecasts.withinAge = world.forecasts.fresh
+        val updates = world.observe()
+
+        world.selection.value = budapest
+
+        assertEquals(
+            listOf(
+                ForecastUpdate.NoPlace,
+                ForecastUpdate.Fetching,
+                ForecastUpdate.Ready(world.forecasts.fresh),
+            ),
+            updates,
+        )
+    }
+
     @Test
     fun `the place is handed over whole, name and all`() = runTest {
         val world = World(this)
@@ -200,14 +241,28 @@ class ObserveForecastTest {
         val asked = mutableListOf<SelectedPlace>()
         var failWith: Throwable? = null
         var cached: Forecast? = null
+        var withinAge: Forecast? = null
         var gate: (suspend (SelectedPlace) -> Unit)? = null
 
         val fresh: Forecast =
             forecast(zone = ZoneId.of("Europe/Budapest"), from = LocalDate.of(2026, 8, 9), days = 2)
 
-        override fun forecast(at: SelectedPlace): Flow<ForecastRead> = flow {
+        val ages = mutableListOf<Duration>()
+        val forced = mutableListOf<Boolean>()
+
+        override fun forecast(
+            at: SelectedPlace,
+            maxAge: Duration,
+            force: Boolean,
+        ): Flow<ForecastRead> = flow {
             asked += at
-            cached?.let { emit(ForecastRead.Cached(it)) }
+            ages += maxAge
+            forced += force
+            withinAge?.let {
+                emit(ForecastRead.Cached(it))
+                return@flow
+            }
+            cached?.let { emit(ForecastRead.Stale(it)) }
             gate?.invoke(at)
             failWith?.let { throw it }
             emit(ForecastRead.Fresh(fresh))

@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +29,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirTiltedStamp
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
 import com.svyd.upcomingweather.feature.forecast.R
+import com.svyd.upcomingweather.feature.forecast.model.Freshness
 import com.svyd.upcomingweather.feature.forecast.model.HeroUi
 
 /**
@@ -89,10 +91,7 @@ fun HeroBlock(
             }
         }
         Text(
-            text = boldValue(
-                template = stringResource(R.string.forecast_updated_at),
-                value = hero.updatedAt,
-            ),
+            text = freshnessLine(hero.freshness),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.End,
@@ -101,6 +100,19 @@ fun HeroBlock(
                 .padding(top = TimestampGap),
         )
     }
+}
+
+/**
+ * Says how current the reading is: a plain line while it is, the time it was obtained once it is
+ * not. Both come from resources, so the wording is not decided here.
+ */
+@Composable
+private fun freshnessLine(freshness: Freshness) = when (freshness) {
+    Freshness.Fresh -> AnnotatedString(stringResource(R.string.forecast_still_current))
+    is Freshness.Stale -> boldValue(
+        template = stringResource(R.string.forecast_updated_at),
+        value = freshness.refreshedAt,
+    )
 }
 
 /** "Felt like 29°  ·  **H 29°  L 19°**" — feels-like is dropped on the day-details variant. */
@@ -147,7 +159,7 @@ private fun HeroBlockPreview() {
                     feelsLike = "29°",
                     high = "29°",
                     low = "19°",
-                    updatedAt = "10:12",
+                    freshness = Freshness.Stale(refreshedAt = "10:12"),
                 ),
             )
         }
