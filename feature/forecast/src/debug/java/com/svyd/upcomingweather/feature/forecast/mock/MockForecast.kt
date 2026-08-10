@@ -82,12 +82,10 @@ object MockForecast {
         ),
     )
 
-    val refreshing: ForecastUiState.Content = content.copy(isRefreshing = true)
-
     val offline: ForecastUiState.Content =
         content.copy(offline = OfflineUi("Offline — cold trail from 09:12"))
 
-    val loading: ForecastUiState = ForecastUiState.Loading
+    val loading: ForecastUiState = ForecastUiState.Loading()
 
     val error: ForecastUiState = ForecastUiState.Error
 

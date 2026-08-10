@@ -4,6 +4,14 @@
     <string name="forecast_app_title">Upcoming Weather</string>
     <!-- App-bar status line during the loading, when the place has no name yet. -->
     <string name="forecast_loading_title">Picking up the trail…</string>
+    <!-- App-bar status line while the device is being asked where it is. -->
+    <string name="forecast_locating_title">Tracing your steps…</string>
+    <!-- App-bar status line while a forecast is on its way for the place already on screen. -->
+    <string name="forecast_updating_title">Reading the wire…</string>
+
+    <!-- Uncovered as the page is dragged down, before and after the point of no return. -->
+    <string name="forecast_pull_hint">Keep pulling for a new reading</string>
+    <string name="forecast_pull_release">Let go and I\'ll run it again</string>
 
     <!-- Section headers. -->
     <string name="forecast_hours_header">From now on</string>

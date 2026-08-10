@@ -1,5 +1,6 @@
 package com.svyd.upcomingweather.feature.forecast.screen
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,12 +9,18 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
@@ -39,7 +46,10 @@ import com.svyd.upcomingweather.feature.forecast.component.ForecastSkeleton
 import com.svyd.upcomingweather.feature.forecast.component.HeroBlock
 import com.svyd.upcomingweather.feature.forecast.component.HourStrip
 import com.svyd.upcomingweather.feature.forecast.component.OfflineBanner
+import com.svyd.upcomingweather.feature.forecast.component.PullNotice
+import com.svyd.upcomingweather.feature.forecast.component.NoticeHeight
 import com.svyd.upcomingweather.feature.forecast.component.ReadingLedger
+import com.svyd.upcomingweather.feature.forecast.model.Busy
 import com.svyd.upcomingweather.feature.forecast.model.DayUi
 import com.svyd.upcomingweather.feature.forecast.model.ForecastUiState
 import com.svyd.upcomingweather.feature.forecast.model.Freshness
@@ -61,6 +71,7 @@ private const val ATTRIBUTION_KEY = "attribution"
  * Renders whatever [state] it is handed and reports every gesture upward — it holds no data of
  * its own, and the only state it does own is where the list is scrolled to.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     modifier: Modifier = Modifier,
@@ -73,6 +84,14 @@ fun DashboardScreen(
     onOpenSettings: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
+    val pull = rememberPullToRefreshState()
+    val scrolled by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 ||
+                listState.firstVisibleItemScrollOffset > 0 ||
+                pull.distanceFraction > 0f
+        }
+    }
     val heroCollapsed by remember {
         derivedStateOf {
             val layout = listState.layoutInfo
@@ -100,9 +119,12 @@ fun DashboardScreen(
             ) {
                 NoirTopBarTitle(state.title(heroCollapsed))
             }
+            // Only once the page has moved under it, scrolled or dragged: at rest the bar sits on
+            // the same sheet as the content and a rule would divide nothing.
+            if (scrolled) NoirHairlineDivider()
 
             when (state) {
-                ForecastUiState.Loading -> ForecastSkeleton()
+                is ForecastUiState.Loading -> ForecastSkeleton()
 
                 ForecastUiState.Empty -> NoirEmptyStateMessage(
                     glyph = NoirStateMark.Empty,
@@ -183,6 +205,7 @@ fun DashboardScreen(
                 is ForecastUiState.Content -> DashboardContent(
                     content = state,
                     listState = listState,
+                    pull = pull,
                     onRefresh = onRefresh,
                     onRetry = onRetry,
                     onDayClick = onDayClick,
@@ -198,18 +221,37 @@ private fun DashboardContent(
     modifier: Modifier = Modifier,
     content: ForecastUiState.Content,
     listState: LazyListState,
+    pull: PullToRefreshState,
     onRefresh: () -> Unit,
     onRetry: () -> Unit,
     onDayClick: (date: String) -> Unit,
 ) {
-    PullToRefreshBox(
-        modifier = modifier.fillMaxSize(),
-        isRefreshing = content.isRefreshing,
-        onRefresh = onRefresh,
+    val travel = with(LocalDensity.current) { NoticeHeight.toPx() }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            // Clipped so the line is hidden under the app bar until the page is dragged off it.
+            .clipToBounds()
+            // Nothing is reported under the reader's thumb: the page itself moves and the line
+            // behind it is what answers. Refreshing is always false, so letting go returns the
+            // page at once and the app bar carries it from there.
+            .pullToRefresh(isRefreshing = false, state = pull, onRefresh = onRefresh),
     ) {
+        val pulled = pull.distanceFraction.coerceIn(0f, 1f)
+
+        PullNotice(
+            fraction = pull.distanceFraction,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                // Travels with the page it is uncovered by, from behind the bar down into place.
+                .graphicsLayer { translationY = (pulled - 1f) * travel },
+        )
+
         LazyColumn(
             state = listState,
             contentPadding = NoirInsetDefaults.scrollableContentPadding,
+            modifier = Modifier.graphicsLayer { translationY = pulled * travel },
         ) {
             if (content.offline != null) {
                 item(key = OFFLINE_KEY) {
@@ -294,8 +336,17 @@ private fun ForecastUiState.title(heroCollapsed: Boolean): String = when (this) 
     is ForecastUiState.LocationRefused,
     ForecastUiState.LocationUnavailable,
         -> stringResource(R.string.forecast_app_title)
-    ForecastUiState.Loading -> stringResource(R.string.forecast_loading_title)
-    is ForecastUiState.Content -> if (heroCollapsed) "$city · ${hero.temperature}" else city
+
+    is ForecastUiState.Loading -> when (busy) {
+        Busy.Locating -> stringResource(R.string.forecast_locating_title)
+        Busy.Updating -> stringResource(R.string.forecast_loading_title)
+    }
+
+    is ForecastUiState.Content -> when (busy) {
+        Busy.Locating -> stringResource(R.string.forecast_locating_title)
+        Busy.Updating -> stringResource(R.string.forecast_updating_title)
+        null -> if (heroCollapsed) "$city · ${hero.temperature}" else city
+    }
 }
 
 @NoirScreenPreviews
