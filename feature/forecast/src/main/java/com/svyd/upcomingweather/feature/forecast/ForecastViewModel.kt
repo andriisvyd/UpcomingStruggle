@@ -101,7 +101,7 @@ internal class ForecastViewModel(
         }
     }
 
-    /** Anything other than these two is a defect rather than something to explain to a reader. */
+    /** Anything other than these two, is a defect rather than something to explain to a reader. */
     private fun Throwable.asState(canAskAgain: Boolean): ForecastUiState? = when (this) {
         is WeatherFailure.LocationPermissionMissing -> ForecastUiState.LocationRefused(canAskAgain)
         is WeatherFailure.LocationUnavailable -> ForecastUiState.LocationUnavailable
