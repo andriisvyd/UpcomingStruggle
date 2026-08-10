@@ -6,7 +6,6 @@ import com.svyd.upcomingweather.core.domain.failure.WeatherFailure
 import com.svyd.upcomingweather.core.domain.model.Forecast
 import com.svyd.upcomingweather.core.domain.model.ForecastUpdate
 import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
-import com.svyd.upcomingweather.core.domain.usecase.RecordLocationPrompt
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
 import com.svyd.upcomingweather.feature.forecast.mapper.ForecastUiMapper
 import com.svyd.upcomingweather.feature.forecast.model.ForecastUiState
@@ -30,7 +29,6 @@ import java.time.Clock
 internal class ForecastViewModel(
     observeForecast: ObserveForecast,
     private val selectCurrentPlace: SelectCurrentPlace,
-    private val recordLocationPrompt: RecordLocationPrompt,
     private val mapper: ForecastUiMapper,
     private val clock: Clock,
 ) : ViewModel() {
@@ -70,16 +68,6 @@ internal class ForecastViewModel(
 
     fun refresh() {
         refresh.tryEmit(Unit)
-    }
-
-    /**
-     * Notes that the system prompt is about to be shown.
-     *
-     * Nothing can work this out later: a refusal looks the same whether or not the reader was ever
-     * asked, so the one component that knows has to write it down.
-     */
-    fun locationPromptShown() {
-        viewModelScope.launch { recordLocationPrompt() }
     }
 
     /**

@@ -16,27 +16,22 @@ import com.svyd.upcomingweather.core.data.location.position.FusedPositionProvide
 import com.svyd.upcomingweather.core.data.location.position.PositionProvider
 import com.svyd.upcomingweather.core.data.location.geocoder.ReverseGeocoder
 import com.svyd.upcomingweather.core.data.localsource.ForecastLocalSource
-import com.svyd.upcomingweather.core.data.localsource.LocationPromptLocalSource
 import com.svyd.upcomingweather.core.data.localsource.RecentsLocalSource
 import com.svyd.upcomingweather.core.data.localsource.SelectionLocalSource
 import com.svyd.upcomingweather.core.data.localsource.datastore.DataStoreForecastSource
-import com.svyd.upcomingweather.core.data.localsource.datastore.DataStoreLocationPromptSource
 import com.svyd.upcomingweather.core.data.localsource.datastore.DataStoreRecentsSource
 import com.svyd.upcomingweather.core.data.localsource.datastore.DataStoreSelectionSource
 import com.svyd.upcomingweather.core.data.repository.DefaultForecastRepository
-import com.svyd.upcomingweather.core.data.repository.DefaultLocationPromptRepository
 import com.svyd.upcomingweather.core.data.repository.DefaultPlaceRepository
 import com.svyd.upcomingweather.core.data.repository.DefaultRecentPlacesRepository
 import com.svyd.upcomingweather.core.data.repository.DefaultSelectedPlaceRepository
 import com.svyd.upcomingweather.core.domain.repository.ForecastRepository
-import com.svyd.upcomingweather.core.domain.repository.LocationPromptRepository
 import com.svyd.upcomingweather.core.domain.repository.PlaceRepository
 import com.svyd.upcomingweather.core.domain.repository.RecentPlacesRepository
 import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
 import com.svyd.upcomingweather.core.domain.usecase.GetRecentPlaces
 import com.svyd.upcomingweather.core.domain.usecase.ObserveDay
 import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
-import com.svyd.upcomingweather.core.domain.usecase.RecordLocationPrompt
 import com.svyd.upcomingweather.core.domain.usecase.SearchPlaces
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
 import com.svyd.upcomingweather.core.domain.usecase.SelectPlace
@@ -83,7 +78,6 @@ val dataModule = module {
     single<ForecastLocalSource> { DataStoreForecastSource(store = get(), json = get()) }
     single<SelectionLocalSource> { DataStoreSelectionSource(store = get(), json = get()) }
     single<RecentsLocalSource> { DataStoreRecentsSource(store = get(), json = get()) }
-    single<LocationPromptLocalSource> { DataStoreLocationPromptSource(store = get()) }
 
     single<ReverseGeocoder> { AndroidReverseGeocoder(context = androidContext()) }
     single<LocationPermission> { AndroidLocationPermission(context = androidContext()) }
@@ -93,7 +87,6 @@ val dataModule = module {
             permission = get(),
             positions = get(),
             geocoder = get(),
-            prompts = get(),
         )
     }
 
@@ -101,7 +94,6 @@ val dataModule = module {
     single<ForecastRepository> {
         DefaultForecastRepository(api = get(), forecasts = get(), clock = get())
     }
-    single<LocationPromptRepository> { DefaultLocationPromptRepository(prompts = get()) }
     single<PlaceRepository> { DefaultPlaceRepository(api = get(), locationSource = get()) }
     single<SelectedPlaceRepository> { DefaultSelectedPlaceRepository(selections = get()) }
     single<RecentPlacesRepository> { DefaultRecentPlacesRepository(recents = get()) }
@@ -112,7 +104,6 @@ val dataModule = module {
     factory { SelectPlace(selection = get(), recents = get()) }
     factory { SelectCurrentPlace(places = get(), selection = get()) }
     factory { GetRecentPlaces(recents = get()) }
-    factory { RecordLocationPrompt(prompts = get()) }
 }
 
 private fun retrofit(client: OkHttpClient, json: Json, baseUrl: String): Retrofit =

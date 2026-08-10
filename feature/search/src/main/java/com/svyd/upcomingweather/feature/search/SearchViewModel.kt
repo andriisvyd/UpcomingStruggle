@@ -6,7 +6,6 @@ import com.svyd.upcomingweather.core.domain.failure.WeatherFailure
 import com.svyd.upcomingweather.core.domain.model.Place
 import com.svyd.upcomingweather.core.domain.model.SearchOutcome
 import com.svyd.upcomingweather.core.domain.usecase.GetRecentPlaces
-import com.svyd.upcomingweather.core.domain.usecase.RecordLocationPrompt
 import com.svyd.upcomingweather.core.domain.usecase.SearchPlaces
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
 import com.svyd.upcomingweather.core.domain.usecase.SelectPlace
@@ -41,7 +40,6 @@ internal class SearchViewModel(
     private val selectPlace: SelectPlace,
     private val selectCurrentPlace: SelectCurrentPlace,
     private val recentPlaces: GetRecentPlaces,
-    private val recordLocationPrompt: RecordLocationPrompt,
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
@@ -85,11 +83,6 @@ internal class SearchViewModel(
             selectPlace(place)
             then()
         }
-    }
-
-    /** Noted before the prompt appears, because nothing can tell afterwards that it did. */
-    fun locationPromptShown() {
-        viewModelScope.launch { recordLocationPrompt() }
     }
 
     /**

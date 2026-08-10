@@ -29,7 +29,6 @@ val forecastModule = module {
         ForecastViewModel(
             observeForecast = get(),
             selectCurrentPlace = get(),
-            recordLocationPrompt = get(),
             mapper = get(),
             clock = get(),
         )

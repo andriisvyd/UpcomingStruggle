@@ -20,14 +20,12 @@ sealed class WeatherFailure(message: String, cause: Throwable? = null) : Excepti
         WeatherFailure("provider did not answer usefully", cause)
 
     /**
-     * Location was never granted.
+     * Location was not granted.
      *
-     * [askedBefore] is the half of the picture the data layer owns. Combined with the rationale
-     * flag, which only a UI holding an Activity can read, it separates "has not been asked yet"
-     * from "said no for good" — and those two want a prompt and a trip to settings respectively.
+     * Whether the platform will still offer the prompt is not knowable here — it needs an Activity
+     * — so the caller reads it and decides between asking again and a trip to settings.
      */
-    class LocationPermissionMissing(val askedBefore: Boolean) :
-        WeatherFailure("location permission not granted, askedBefore=$askedBefore")
+    class LocationPermissionMissing : WeatherFailure("location permission not granted")
 
     /** Permission is held, but there is no position: services off, or nothing reported. */
     class LocationUnavailable(cause: Throwable? = null) :
