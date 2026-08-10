@@ -46,7 +46,6 @@ fun DashboardRoute(
         modifier = modifier,
         state = state,
         onLocationClick = {
-            viewModel.locationPromptShown()
             prompt.launch(LOCATION_PERMISSIONS)
         },
         onSearchClick = onSearchClick,

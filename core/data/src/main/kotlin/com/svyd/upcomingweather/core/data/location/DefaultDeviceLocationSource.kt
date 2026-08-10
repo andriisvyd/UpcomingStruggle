@@ -3,7 +3,6 @@ package com.svyd.upcomingweather.core.data.location
 import com.svyd.upcomingweather.core.data.location.geocoder.ReverseGeocoder
 import com.svyd.upcomingweather.core.data.location.permission.LocationPermission
 import com.svyd.upcomingweather.core.data.location.position.PositionProvider
-import com.svyd.upcomingweather.core.data.localsource.LocationPromptLocalSource
 import com.svyd.upcomingweather.core.domain.failure.WeatherFailure
 import com.svyd.upcomingweather.core.domain.model.Coordinates
 import com.svyd.upcomingweather.core.domain.model.PlaceLabel
@@ -15,19 +14,18 @@ import kotlin.math.roundToLong
  * Where the device is, and what that place is called.
  *
  * Whether the permission is held is knowable here; whether the user has refused it for good is not,
- * because that needs an Activity. So the failure carries whether the prompt has ever been shown,
- * and the caller — which has the Activity — decides between prompting and sending them to settings.
+ * because that needs an Activity. So the refusal travels up plain, and the caller — which has the
+ * Activity — decides between prompting again and sending them to settings.
  */
 internal class DefaultDeviceLocationSource(
     private val permission: LocationPermission,
     private val positions: PositionProvider,
     private val geocoder: ReverseGeocoder,
-    private val prompts: LocationPromptLocalSource,
 ) : DeviceLocationSource {
 
     override suspend fun currentPlace(): SelectedPlace {
         if (!permission.granted()) {
-            throw WeatherFailure.LocationPermissionMissing(askedBefore = prompts.everAsked())
+            throw WeatherFailure.LocationPermissionMissing()
         }
 
         val reading = positions.currentPosition() ?: throw WeatherFailure.LocationUnavailable()

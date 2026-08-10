@@ -79,14 +79,19 @@ fun NoirTextField(
             keyboardOptions = KeyboardOptions(imeAction = imeAction),
             keyboardActions = KeyboardActions { onImeAction() },
             decorationBox = { field ->
-                if (value.isEmpty() && placeholder != null) {
-                    Text(
-                        text = placeholder,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                Box(
+                    modifier = Modifier.padding(top = 4.dp),
+                    contentAlignment = Alignment.CenterStart,
+                    ) {
+                    if (value.isEmpty() && placeholder != null) {
+                        Text(
+                            text = placeholder,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    field()
                 }
-                field()
             },
         )
         if (trailing != null) {

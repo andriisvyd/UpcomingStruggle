@@ -12,7 +12,6 @@ val searchModule = module {
             selectPlace = get(),
             selectCurrentPlace = get(),
             recentPlaces = get(),
-            recordLocationPrompt = get(),
         )
     }
 }

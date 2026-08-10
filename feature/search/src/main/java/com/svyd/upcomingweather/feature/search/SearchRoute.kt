@@ -41,7 +41,6 @@ fun SearchRoute(
         onBack = onBack,
         onCitySelected = { city -> viewModel.select(city, then = onDone) },
         onUseCurrentLocation = {
-            viewModel.locationPromptShown()
             prompt.launch(LOCATION_PERMISSIONS)
         },
         onOpenSettings = onOpenSettings,
