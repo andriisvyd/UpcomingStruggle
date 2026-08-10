@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App-bar status line before a city has been chosen. -->
+    <string name="forecast_app_title">Upcoming Weather</string>
+    <!-- App-bar status line during the loading, when the place has no name yet. -->
+    <string name="forecast_loading_title">Picking up the trail…</string>
+
+    <!-- Section headers. -->
+    <string name="forecast_hours_header">From now on</string>
+    <string name="forecast_days_header">Seven days into the dark</string>
+
+    <!-- Open-Meteo's data is CC BY 4.0 and asks to be credited by name. %1$s is the credit. -->
+    <string name="forecast_attribution">%1$s — don\'t shoot the messenger</string>
+    <!-- The wording Open-Meteo's licence asks for. Opens open-meteo.com. -->
+    <string name="forecast_attribution_source">Weather data by Open-Meteo.com</string>
+
+    <!-- Hero. %1$s is a time of day, rendered bold. -->
+    <string name="forecast_updated_at">The trail was warm at %1$s</string>
+    <!-- %1$s is the feels-like temperature, already formatted with its degree sign. -->
+    <string name="forecast_feels_like">Felt like %1$s</string>
+    <!--
+      %1$s is the day's high, %2$s its low. Rendered bold.
+      Quoted: the spacing is deliberate, and XML collapses runs of whitespace without it.
+    -->
+    <string name="forecast_high_low">"H %1$s  L %2$s"</string>
+    <string name="forecast_meta_separator">"  ·  "</string>
+
+    <!-- First launch: no city has been selected yet. -->
+    <string name="forecast_empty_title">No city. No case.</string>
+    <string name="forecast_empty_body">Every case starts with a city. Name one, or let me trace your steps.</string>
+
+    <!-- The fetch failed and nothing is cached. -->
+    <string name="forecast_error_title">The forecast went dark.</string>
+    <string name="forecast_error_body">The wire\'s cut. Check your connection and we go again.</string>
+    <string name="forecast_error_action">Run it again</string>
+
+    <!-- Actions. -->
+    <string name="forecast_trace_action">Trace my steps</string>
+    <string name="forecast_name_city_action">name a city instead</string>
+    <string name="forecast_retry_action">Retry</string>
+
+    <!-- Spoken, never voiced: these are read aloud by a screen reader. -->
+    <string name="forecast_cd_location">Use current location</string>
+    <string name="forecast_cd_search">Search for a city</string>
+    <string name="forecast_cd_back">Back</string>
+    <string name="forecast_cd_offline">Offline</string>
+    <!-- %1$s is a day name, e.g. "Friday". -->
+    <string name="forecast_cd_open_day">Opens %1$s details</string>
+
+    <!-- The line under the temperature, one per verdict the domain reaches. -->
+    <string name="forecast_remark_clear_day">The sun\'s out and nobody\'s hiding.</string>
+    <string name="forecast_remark_clear_night">The night held its breath.</string>
+    <string name="forecast_remark_partly_cloudy">Clouds circle like old regrets.</string>
+    <string name="forecast_remark_overcast">A lid of grey, screwed on tight.</string>
+    <string name="forecast_remark_fog">The street ends ten paces out.</string>
+    <string name="forecast_remark_drizzle">Thin rain, the patient kind.</string>
+    <string name="forecast_remark_rain">Bloody awful rain, cold as a debt.</string>
+    <string name="forecast_remark_snow">Snow, settling in for a long stay.</string>
+    <string name="forecast_remark_thunder">Thunder, and it means it.</string>
+
+    <!-- Names the condition plainly. Read aloud by a screen reader. -->
+    <string name="forecast_condition_clear">Clear</string>
+    <string name="forecast_condition_partly_cloudy">Partly cloudy</string>
+    <string name="forecast_condition_overcast">Overcast</string>
+    <string name="forecast_condition_fog">Fog</string>
+    <string name="forecast_condition_drizzle">Drizzle</string>
+    <string name="forecast_condition_rain">Rain</string>
+    <string name="forecast_condition_snow">Snow</string>
+    <string name="forecast_condition_thunder">Thunderstorm</string>
+
+    <!-- Reading labels. Uppercased by the row that draws them. -->
+    <string name="forecast_reading_humidity">Humidity</string>
+    <string name="forecast_reading_wind">Wind</string>
+    <string name="forecast_reading_sunrise">Sunrise</string>
+    <string name="forecast_reading_pressure">Pressure</string>
+
+    <!-- The second figure on each reading. %1$s is that figure, already formatted. -->
+    <string name="forecast_detail_cloud_cover">clouds packing %1$s</string>
+    <string name="forecast_detail_gusts">gusts of %1$s</string>
+    <string name="forecast_detail_sunset">dark again by %1$s</string>
+    <string name="forecast_detail_ground_pressure">%1$s on the street</string>
+
+    <!-- The day in progress. Every other day is named by its weekday. -->
+    <string name="forecast_day_today">Today</string>
+
+    <!-- %1$s is the day's name, %2$s its date. -->
+    <string name="forecast_day_title">%1$s · %2$s</string>
+    <!-- %1$s is the day's name. -->
+    <string name="forecast_day_log_header">%1$s, step by step</string>
+
+    <string name="forecast_reading_precipitation">Precip</string>
+    <!-- %1$s is how much rain, already formatted. -->
+    <string name="forecast_detail_rainfall">%1$s on the books</string>
+    <!-- %1$.1f is millimetres of rain. -->
+    <string name="forecast_millimetres">%1$.1f mm</string>
+
+    <string name="forecast_hour_now">Now</string>
+    <!-- Stands in for a figure that is not available. -->
+    <string name="forecast_no_value">\u2014</string>
+
+    <!-- Units. %1$d is the figure. -->
+    <string name="forecast_degrees">%1$d\u00B0</string>
+    <string name="forecast_percentage">%1$d%%</string>
+    <string name="forecast_wind_speed">%1$d km/h</string>
+    <string name="forecast_pressure">%1$d hPa</string>
+
+    <!-- Names the device's own position when nothing could put a name to it. -->
+    <string name="forecast_current_location">Current location</string>
+    <!-- Shown over stored numbers when the last attempt to fetch did not arrive. -->
+    <string name="forecast_offline">Offline — showing what was kept</string>
+
+    <!-- Shown in place of a time while the forecast is still current. -->
+    <string name="forecast_still_current">The trail is still warm</string>
+
+    <!-- Location was refused and the system will not offer the prompt again. -->
+    <string name="forecast_refused_title">The city won\'t say.</string>
+    <string name="forecast_refused_body">Location is switched off for this app. Turn it on in settings, or name a city yourself.</string>
+    <string name="forecast_refused_action">Open settings</string>
+
+    <!-- Location was refused, but the system will still offer the prompt. -->
+    <string name="forecast_refused_again_body">Without location there is nothing to go on. Ask me again, or name a city yourself.</string>
+    <string name="forecast_refused_again_action">Ask again</string>
+
+    <!-- Location was granted, but the device could not say where it is. -->
+    <string name="forecast_no_position_title">Nothing came back.</string>
+    <string name="forecast_no_position_body">The device won\'t say where it is. Try again, or name a city yourself.</string>
+    <string name="forecast_no_position_action">Try again</string>
+
+    <!-- A day that is not in the forecast. -->
+    <string name="forecast_day_unavailable_title">That day went cold.</string>
+    <string name="forecast_day_unavailable_body">No log for it. Go back and pick another.</string>
+</resources>

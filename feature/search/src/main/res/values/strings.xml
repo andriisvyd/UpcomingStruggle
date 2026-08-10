@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_placeholder">Name the city.</string>
+    <string name="search_location_action">Trace my steps</string>
+    <string name="search_recents_header">Cold cases</string>
+
+    <!-- Geocoding returned nothing. %1$s is the query the user typed. -->
+    <string name="search_no_results">No leads on \'%1$s\'.</string>
+
+    <!-- Geocoding failed. -->
+    <string name="search_error_message">The search hit a wall.</string>
+    <string name="search_error_action">Run it again</string>
+
+    <!-- Location was refused and the system will not offer the prompt again. -->
+    <string name="search_location_refused">Location is switched off for this app.</string>
+    <string name="search_location_settings_action">Open settings</string>
+    <!-- Location was refused, but the system will still offer the prompt. -->
+    <string name="search_location_refused_again">No location, no trail to follow.</string>
+    <string name="search_location_again_action">Ask again</string>
+    <!-- Location was granted and the device still could not say where it is. -->
+    <string name="search_location_unavailable">The device won\'t say where it is.</string>
+
+    <!-- Spoken, never voiced: these are read aloud by a screen reader. -->
+    <string name="search_cd_back">Back</string>
+    <string name="search_cd_search">Search</string>
+    <string name="search_cd_clear">Clear the query</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!--
+      A forecast covers a grid cell, so approximate location would do. Precise is declared because
+      it is the only way to obtain a position from a device whose sole source is GPS, which is the
+      case on an emulator and on any device out of reach of Wi-Fi and cell.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+</manifest>
