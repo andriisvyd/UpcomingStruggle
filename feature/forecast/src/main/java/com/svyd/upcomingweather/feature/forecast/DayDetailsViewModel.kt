@@ -32,9 +32,19 @@ internal class DayDetailsViewModel(
 
     private val refresh = MutableSharedFlow<Unit>()
 
+    /**
+     * What the screen last showed.
+     *
+     * Held here rather than carried through the stream, because the stream does not outlive the
+     * screen: it stops with the last subscriber and starts again from the beginning. A fetch
+     * announces itself on every restart, and without something that remembers the day already
+     * drawn it would empty the page each time.
+     */
+    private var rendered: DayDetailsUiState = DayDetailsUiState.Loading
+
     val state: StateFlow<DayDetailsUiState> =
         combine(observeDay(date, refresh), ticks()) { update, _ -> update }
-            .map(::toUiState)
+            .map { update -> toUiState(update).also { rendered = it } }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(SUBSCRIPTION_GRACE),
@@ -42,7 +52,8 @@ internal class DayDetailsViewModel(
             )
 
     private fun toUiState(update: DayUpdate): DayDetailsUiState = when (update) {
-        DayUpdate.Fetching -> DayDetailsUiState.Loading
+        // A fetch behind a day already drawn changes nothing on screen; only an empty page waits.
+        DayUpdate.Fetching -> rendered as? DayDetailsUiState.Content ?: DayDetailsUiState.Loading
         DayUpdate.Unavailable -> DayDetailsUiState.Unavailable
         is DayUpdate.Stale -> content(update.day, update.retrievedAt)
         is DayUpdate.Ready -> content(update.day, update.retrievedAt)

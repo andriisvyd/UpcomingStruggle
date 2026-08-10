@@ -1,26 +1,13 @@
 package com.svyd.upcomingweather.feature.forecast
 
-import com.svyd.upcomingweather.core.domain.model.Forecast
-import com.svyd.upcomingweather.core.domain.model.ForecastRead
-import com.svyd.upcomingweather.core.domain.model.Place
-import com.svyd.upcomingweather.core.domain.model.PlaceLabel
-import com.svyd.upcomingweather.core.domain.model.SelectedPlace
-import com.svyd.upcomingweather.core.domain.repository.ForecastRepository
-import com.svyd.upcomingweather.core.domain.repository.PlaceRepository
-import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
 import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
 import com.svyd.upcomingweather.feature.forecast.mapper.FakeForecastStrings
 import com.svyd.upcomingweather.feature.forecast.mapper.ForecastUiMapper
 import com.svyd.upcomingweather.feature.forecast.mapper.RETRIEVED_AT
-import com.svyd.upcomingweather.feature.forecast.mapper.forecast
-import com.svyd.upcomingweather.feature.forecast.mapper.week
 import com.svyd.upcomingweather.feature.forecast.model.ForecastUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -34,8 +21,6 @@ import org.junit.Before
 import org.junit.Test
 import java.time.Clock
 import java.time.Duration
-import java.time.LocalDate
-import java.time.ZoneId
 
 /**
  * The dashboard's state survives leaving the screen.
@@ -83,7 +68,7 @@ class ForecastViewModelTest {
     }
 
     private fun TestScope.viewModel(): ForecastViewModel {
-        val selection = FakeSelection(budapest)
+        val selection = FakeSelection()
         return ForecastViewModel(
             observeForecast = ObserveForecast(selection, FakeForecasts(sofa)),
             selectCurrentPlace = SelectCurrentPlace(FakePlaces(), selection),
@@ -96,35 +81,8 @@ class ForecastViewModelTest {
         )
     }
 
-    private class FakeSelection(initial: SelectedPlace?) : SelectedPlaceRepository {
-        override val selected = MutableStateFlow(initial)
-
-        override suspend fun select(place: SelectedPlace) {
-            selected.value = place
-        }
-    }
-
-    /** Answers from the store every time, as the repository does inside the age. */
-    private class FakeForecasts(private val stored: Forecast) : ForecastRepository {
-        override fun forecast(
-            at: SelectedPlace,
-            maxAge: Duration,
-            force: Boolean,
-        ): Flow<ForecastRead> = flow { emit(ForecastRead.Cached(stored)) }
-    }
-
-    private class FakePlaces : PlaceRepository {
-        override suspend fun search(query: String): List<Place> = emptyList()
-
-        override suspend fun currentPlace(): SelectedPlace = budapest
-    }
-
     private companion object {
-        val zone: ZoneId = ZoneId.of("Europe/Budapest")
-        val budapest = SelectedPlace(
-            label = PlaceLabel.Named("Budapest"),
-            coordinates = com.svyd.upcomingweather.core.domain.model.Coordinates(47.5, 19.04),
-        )
-        val sofa: Forecast = forecast(zone, week(zone, LocalDate.of(2026, 8, 10)))
+        val zone = testZone
+        val sofa = storedForecast
     }
 }

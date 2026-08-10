@@ -56,13 +56,13 @@ Five files carry most of the decisions:
 
 ## Tests
 
-133, all JVM, no instrumentation:
+134, all JVM, no instrumentation:
 
 ```
 ./gradlew test
 ```
 
-`:core:domain` 42 · `:core:data` 64 · `:feature:forecast` 26 · `:feature:search` 1
+`:core:domain` 42 · `:core:data` 64 · `:feature:forecast` 27 · `:feature:search` 1
 
 Written against payloads captured from the live API and a real DataStore on disk. Deliberate
 mutations were run against both the response mapper and the UI mapper to check the suites have
