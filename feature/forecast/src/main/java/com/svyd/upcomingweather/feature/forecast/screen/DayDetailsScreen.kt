@@ -1,21 +1,23 @@
 package com.svyd.upcomingweather.feature.forecast.screen
 
+import androidx.compose.foundation.ScrollState
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirConditionGlyph
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -63,6 +65,12 @@ fun DayDetailsScreen(
     state: DayDetailsUiState,
     onBack: () -> Unit = {},
 ) {
+    val scrollState = rememberScrollState()
+    val scrolled by remember {
+        derivedStateOf {
+            scrollState.value != 0
+        }
+    }
     NoirBackground(modifier) {
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
@@ -77,6 +85,8 @@ fun DayDetailsScreen(
                 NoirTopBarTitle(state.topBarTitle())
             }
 
+            if (scrolled) NoirHairlineDivider()
+
             when (state) {
                 DayDetailsUiState.Loading -> ForecastSkeleton()
 
@@ -86,17 +96,22 @@ fun DayDetailsScreen(
                     body = stringResource(R.string.forecast_day_unavailable_body),
                 )
 
-                is DayDetailsUiState.Content -> DayLog(state)
+                is DayDetailsUiState.Content -> DayLog(
+                    state = state,
+                    scrollState = scrollState)
             }
         }
     }
 }
 
 @Composable
-private fun DayLog(state: DayDetailsUiState.Content) {
+private fun DayLog(
+    state: DayDetailsUiState.Content,
+    scrollState: ScrollState,
+) {
     Column(
         modifier = Modifier
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             // After the scroll, so it pads the content rather than the viewport: the log passes
             // under the navigation bar and still ends clear of it.
             .padding(NoirInsetDefaults.scrollableContentPadding)

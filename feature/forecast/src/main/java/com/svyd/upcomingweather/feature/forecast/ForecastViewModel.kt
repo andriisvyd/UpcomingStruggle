@@ -8,13 +8,14 @@ import com.svyd.upcomingweather.core.domain.model.ForecastUpdate
 import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
 import com.svyd.upcomingweather.feature.forecast.mapper.ForecastUiMapper
+import com.svyd.upcomingweather.feature.forecast.model.Busy
 import com.svyd.upcomingweather.feature.forecast.model.ForecastUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Clock
@@ -37,6 +38,17 @@ internal class ForecastViewModel(
     private val locationOutcome = MutableStateFlow<ForecastUiState?>(null)
     private val locating = MutableStateFlow(false)
 
+    /**
+     * What the screen last showed.
+     *
+     * Held here rather than folded through the stream, because the stream does not outlive the
+     * screen: leaving for the day details drops the last subscriber and the collection stops. A
+     * fold would restart from its seed on the way back and draw an empty page over a forecast that
+     * is already known, so what a fetch in flight looks like has to be decided against the last
+     * thing drawn rather than against the start of a stream.
+     */
+    private var rendered: ForecastUiState = ForecastUiState.Loading()
+
     val state: StateFlow<ForecastUiState> =
         combine(
             observeForecast(refresh),
@@ -46,24 +58,24 @@ internal class ForecastViewModel(
         ) { update, _, outcome, looking ->
             Triple(update, outcome, looking)
         }
-            .runningFold(ForecastUiState.Loading as ForecastUiState) { previous, next ->
-                val (update, outcome, looking) = next
+            .map { (update, outcome, looking) ->
                 when {
-                    // Finding the device takes seconds and says nothing while it does; without this
-                    // the button looks dead.
-                    looking && update == ForecastUpdate.NoPlace -> ForecastUiState.Loading
-
                     // A failed attempt only takes the screen when there is nothing else on it:
                     // someone who has already chosen a city keeps seeing its weather.
-                    outcome != null && update == ForecastUpdate.NoPlace -> outcome
+                    outcome != null && !looking && update == ForecastUpdate.NoPlace -> outcome
 
-                    else -> reduce(previous, update)
-                }
+                    // Finding the device takes seconds and says nothing while it does, so it
+                    // outranks a fetch: it is the slower of the two and the one the reader asked
+                    // for.
+                    looking -> reduce(rendered, update).locating()
+
+                    else -> reduce(rendered, update)
+                }.also { rendered = it }
             }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(SUBSCRIPTION_GRACE),
-                initialValue = ForecastUiState.Loading,
+                initialValue = ForecastUiState.Loading(),
             )
 
     fun refresh() {
@@ -103,23 +115,29 @@ internal class ForecastViewModel(
             // What a fetch looks like depends on what is already drawn: nothing to show means the
             // page types itself in, something to show means a spinner over it.
             ForecastUpdate.Fetching -> when (previous) {
-                is ForecastUiState.Content -> previous.copy(isRefreshing = true)
-                else -> ForecastUiState.Loading
+                is ForecastUiState.Content -> previous.copy(busy = Busy.Updating)
+                else -> ForecastUiState.Loading(Busy.Updating)
             }
 
-            is ForecastUpdate.Stale -> content(update.forecast, refreshing = true)
-            is ForecastUpdate.Ready -> content(update.forecast, refreshing = false)
+            is ForecastUpdate.Stale -> content(update.forecast, busy = Busy.Updating)
+            is ForecastUpdate.Ready -> content(update.forecast, busy = null)
 
             // A failure over something already drawn is a notice, not a blank page.
             is ForecastUpdate.Failed -> when (previous) {
                 is ForecastUiState.Content ->
-                    previous.copy(isRefreshing = false, offline = mapper.offline())
+                    previous.copy(busy = null, offline = mapper.offline())
 
                 else -> ForecastUiState.Error
             }
         }
 
-    private fun content(forecast: Forecast, refreshing: Boolean): ForecastUiState.Content {
+    /** Says the device is being asked where it is, without disturbing what is drawn. */
+    private fun ForecastUiState.locating(): ForecastUiState = when (this) {
+        is ForecastUiState.Content -> copy(busy = Busy.Locating)
+        else -> ForecastUiState.Loading(Busy.Locating)
+    }
+
+    private fun content(forecast: Forecast, busy: Busy?): ForecastUiState.Content {
         val now = clock.instant()
         return ForecastUiState.Content(
             city = mapper.city(forecast.label) ?: mapper.currentLocationName(),
@@ -127,7 +145,7 @@ internal class ForecastViewModel(
             hours = mapper.hours(forecast, now, HOURS_ON_STRIP),
             readings = mapper.readings(forecast.current, forecast.days.firstOrNull()),
             days = mapper.days(forecast, now),
-            isRefreshing = refreshing,
+            busy = busy,
         )
     }
 

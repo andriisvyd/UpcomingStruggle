@@ -34,8 +34,8 @@ sealed interface ForecastUiState {
      */
     data object LocationUnavailable : ForecastUiState
 
-    /** Nothing stored and the first fetch is in flight. The place may not be named yet. */
-    data object Loading : ForecastUiState
+    /** Nothing to draw yet. [busy] says what is being waited on. */
+    data class Loading(val busy: Busy = Busy.Updating) : ForecastUiState
 
     data class Content(
         val city: String,
@@ -43,14 +43,30 @@ sealed interface ForecastUiState {
         val hours: List<HourUi>,
         val readings: List<ReadingUi>,
         val days: List<DayUi>,
-        /** A fetch is under way behind what is drawn. */
-        val isRefreshing: Boolean = false,
+        /** Set while something is under way behind what is drawn; null when nothing is. */
+        val busy: Busy? = null,
         /** Set when the last fetch failed and what is drawn came from storage. */
         val offline: OfflineUi? = null,
     ) : ForecastUiState
 
     /** The fetch failed and nothing was stored to fall back on. */
     data object Error : ForecastUiState
+}
+
+/**
+ * What the app bar reports while work is under way.
+ *
+ * The page underneath does not change for either of these — the bar is the only thing that says
+ * something is happening, which is why the two are told apart here rather than folded into a flag.
+ */
+@Immutable
+sealed interface Busy {
+
+    /** A forecast is on its way. */
+    data object Updating : Busy
+
+    /** The device is being asked where it is. */
+    data object Locating : Busy
 }
 
 @Immutable
