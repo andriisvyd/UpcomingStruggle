@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- No <monochrome> layer: themed icons fall back to this icon as drawn,
-     instead of being repainted from the wallpaper. -->
+<!-- The monochrome layer is read only when the reader has turned Themed icons on; with that
+     setting off it is ignored and the two layers below draw as authored. It is orthogonal to the
+     -night qualifiers, which dark mode resolves against background and foreground either way. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@drawable/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>
