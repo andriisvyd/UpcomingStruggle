@@ -26,11 +26,13 @@ import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.largeFontScale
 import com.svyd.upcomingweather.core.designsystem.preview.NoirPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTiltedStamp
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedText
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
 import com.svyd.upcomingweather.feature.forecast.R
 import com.svyd.upcomingweather.feature.forecast.model.Freshness
 import com.svyd.upcomingweather.feature.forecast.model.HeroUi
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * The block at the top of both forecast screens: temperature, stamp, the voiced line, the meta
@@ -52,7 +54,7 @@ fun HeroBlock(
     ) {
         Row(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f)) {
-                Text(
+                NoirTypedText(
                     text = hero.temperature,
                     style = NoirTheme.type.tempDisplay,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -62,10 +64,11 @@ fun HeroBlock(
                     ink = ink,
                     modifier = Modifier.padding(top = StampTopGap, bottom = StampBottomGap),
                 )
-                Text(
+                NoirTypedText(
                     text = hero.line,
                     style = NoirTheme.type.heroLine,
                     color = MaterialTheme.colorScheme.onSurface,
+                    startDelay = LineDelay,
                     modifier = Modifier
                         .padding(top = LineGap)
                         .clearAndSetSemantics { },
@@ -90,11 +93,12 @@ fun HeroBlock(
                 )
             }
         }
-        Text(
+        NoirTypedText(
             text = freshnessLine(hero.freshness),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.End,
+            startDelay = FreshnessDelay,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = TimestampGap),
@@ -167,6 +171,11 @@ private fun HeroBlockPreview() {
 }
 
 private const val PLACEHOLDER = $$"%1$s"
+
+// The block types top to bottom: the temperature goes down first, then the line under it, then the
+// timestamp. The temperature holds the default and starts at once.
+private val LineDelay = 220.milliseconds
+private val FreshnessDelay = 540.milliseconds
 
 private val HeroTopPadding = 12.dp
 private val HeroBottomPadding = 4.dp

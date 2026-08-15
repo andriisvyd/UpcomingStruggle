@@ -32,7 +32,13 @@ private fun TypedBarText(
             withStyle(SpanStyle(color = trackColor)) { append(bar.trailing) }
         }
     }
-    Text(text = text, style = style, maxLines = 1, softWrap = false, modifier = modifier)
+    Text(
+        modifier = modifier,
+        text = text,
+        style = style,
+        maxLines = 1,
+        softWrap = false,
+    )
 }
 
 @Composable
@@ -45,7 +51,9 @@ private fun cellCount(availableWidthPx: Int, minCells: Int): Int {
     val bounded = availableWidthPx in 1 until (Int.MAX_VALUE / 2)
     // [minCells] is the fallback for an unbounded measure, never a floor that would push the bar
     // past its own width once the type — and so the cell — grows.
-    return if (!bounded || cellWidth <= 0) minCells else (availableWidthPx / cellWidth).coerceAtLeast(1)
+    return if (!bounded || cellWidth <= 0) minCells else (availableWidthPx / cellWidth).coerceAtLeast(
+        1
+    )
 }
 
 /**

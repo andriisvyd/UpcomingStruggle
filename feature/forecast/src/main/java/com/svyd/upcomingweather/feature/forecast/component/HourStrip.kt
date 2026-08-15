@@ -45,7 +45,10 @@ fun HourStrip(
         contentPadding = PaddingValues(horizontal = NoirSpacing.gutter),
     ) {
         itemsIndexed(hours, key = { _, hour -> hour.time }) { index, hour ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.animateItem(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 if (index > 0) {
                     NoirPipeDivider(modifier = Modifier.width(NoirSpacing.columnGap.scaledByFont()))
                 }
@@ -104,8 +107,18 @@ private fun HourStripPreview() {
         NoirBackground(drawGrain = false) {
             HourStrip(
                 hours = listOf(
-                    HourUi("Now", NoirCondition.Partly, "27°", contentDescription = "Now, 27 degrees"),
-                    HourUi("12:00", NoirCondition.ClearDay, "28°", contentDescription = "12:00, 28 degrees"),
+                    HourUi(
+                        "Now",
+                        NoirCondition.Partly,
+                        "27°",
+                        contentDescription = "Now, 27 degrees"
+                    ),
+                    HourUi(
+                        "12:00",
+                        NoirCondition.ClearDay,
+                        "28°",
+                        contentDescription = "12:00, 28 degrees"
+                    ),
                     HourUi(
                         time = "18:00",
                         condition = NoirCondition.Partly,
@@ -113,7 +126,12 @@ private fun HourStripPreview() {
                         precip = "10%",
                         contentDescription = "18:00, 26 degrees, 10 percent chance of rain",
                     ),
-                    HourUi("21:00", NoirCondition.ClearNight, "22°", contentDescription = "21:00, 22 degrees"),
+                    HourUi(
+                        "21:00",
+                        NoirCondition.ClearNight,
+                        "22°",
+                        contentDescription = "21:00, 22 degrees"
+                    ),
                 ),
             )
         }

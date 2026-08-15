@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,13 +16,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
-import com.svyd.upcomingweather.core.designsystem.icon.NoirIcons
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirGlyph
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTextField
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirHairlineDivider
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirIconButton
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSecondaryAction
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedIcon
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
+import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 import com.svyd.upcomingweather.feature.search.component.CityRow
 import com.svyd.upcomingweather.feature.search.component.LocationNotice
 import com.svyd.upcomingweather.feature.search.component.LocationRow
@@ -54,10 +54,13 @@ fun SearchScreen(
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
                 navigation = {
-                    NoirIconButton(
-                        icon = NoirIcons.Back,
-                        contentDescription = stringResource(R.string.search_cd_back),
+                    NoirGlyph(
+                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        glyph = NoirTypedIcon.Back,
+                        style = NoirTheme.type.glyphNavIcon,
                         onClick = onBack,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        pressedTint = MaterialTheme.colorScheme.primary,
                     )
                 },
                 actions = {},
@@ -72,21 +75,21 @@ fun SearchScreen(
                         .weight(1f)
                         .padding(end = FieldEndGap),
                     leading = {
-                        Icon(
-                            imageVector = NoirIcons.Search,
-                            contentDescription = stringResource(R.string.search_cd_search),
+                        NoirGlyph(
+                            modifier = Modifier.padding(all = NoirSpacing.m),
+                            glyph = NoirTypedIcon.Empty,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(LeadingIconSize),
                         )
                     },
                     trailing = if (state.query.isNotEmpty()) {
                         {
-                            NoirIconButton(
-                                icon = NoirIcons.Close,
-                                contentDescription = stringResource(R.string.search_cd_clear),
+                            NoirGlyph(
+                                modifier = Modifier
+                                    .padding(all = NoirSpacing.m)
+                                    .size(TrailingIconSize),
+                                glyph = NoirTypedIcon.Clear,
                                 onClick = onClearQuery,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(TrailingIconSize),
                             )
                         }
                     } else {

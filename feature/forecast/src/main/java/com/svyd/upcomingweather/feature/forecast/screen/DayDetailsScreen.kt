@@ -28,13 +28,12 @@ import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
 import com.svyd.upcomingweather.core.designsystem.foundation.scaledByFont
-import com.svyd.upcomingweather.core.designsystem.icon.NoirIcons
 import com.svyd.upcomingweather.core.designsystem.preview.NoirScreenPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessage
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirGlyph
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirHairlineDivider
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirStateMark
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirIconButton
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedIcon
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBarTitle
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSectionStamp
@@ -75,10 +74,13 @@ fun DayDetailsScreen(
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
                 navigation = {
-                    NoirIconButton(
-                        icon = NoirIcons.Back,
-                        contentDescription = stringResource(R.string.forecast_cd_back),
+                    NoirGlyph(
+                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        glyph = NoirTypedIcon.Back,
+                        style = NoirTheme.type.glyphNavIcon,
                         onClick = onBack,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        pressedTint = MaterialTheme.colorScheme.primary,
                     )
                 },
             ) {
@@ -91,7 +93,7 @@ fun DayDetailsScreen(
                 DayDetailsUiState.Loading -> ForecastSkeleton()
 
                 DayDetailsUiState.Unavailable -> NoirEmptyStateMessage(
-                    glyph = NoirStateMark.Empty,
+                    glyph = NoirTypedIcon.Empty,
                     title = stringResource(R.string.forecast_day_unavailable_title),
                     body = stringResource(R.string.forecast_day_unavailable_body),
                 )

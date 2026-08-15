@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
-import com.svyd.upcomingweather.core.designsystem.icon.NoirIcons
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirBlinkingCursor
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirConditionGlyph
@@ -24,7 +21,6 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirDotLeaderRow
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirPanel
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTextField
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirHairlineDivider
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirIconButton
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirListRow
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBarTitle
@@ -33,10 +29,11 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirPrimaryAction
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSecondaryAction
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSectionStamp
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessage
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirGlyph
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirMarkerBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirPlaceholder
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirRangeBar
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirStateMark
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedIcon
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTiltedStamp
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
@@ -54,10 +51,12 @@ private fun PrimitiveGallery() {
             ) {
                 NoirTopBar(
                     navigation = {
-                        NoirIconButton(NoirIcons.MyLocation, "Use current location", onClick = {})
+                        NoirGlyph(
+                            glyph = NoirTypedIcon.Gps,
+                        )
                     },
                     actions = {
-                        NoirIconButton(NoirIcons.Search, "Search for a city", onClick = {})
+
                     },
                 ) {
                     NoirTopBarTitle("Budapest · 27°")
@@ -83,32 +82,64 @@ private fun PrimitiveGallery() {
                         modifier = Modifier.padding(vertical = NoirSpacing.s),
                     ) {
                         NoirCondition.entries.forEach { condition ->
-                            NoirConditionGlyph(condition, style = NoirTheme.type.glyphDay)
+                            NoirConditionGlyph(
+                                condition = condition,
+                                style = NoirTheme.type.glyphDay,
+                            )
                         }
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        NoirConditionGlyph(NoirCondition.Rain, style = NoirTheme.type.glyphHero)
-                        NoirConditionGlyph(NoirCondition.Rain, style = NoirTheme.type.glyphHour)
-                        NoirConditionGlyph(NoirCondition.Rain, style = NoirTheme.type.glyphDay)
+                        NoirConditionGlyph(
+                            condition = NoirCondition.Rain,
+                            style = NoirTheme.type.glyphHero,
+                        )
+                        NoirConditionGlyph(
+                            condition = NoirCondition.Rain,
+                            style = NoirTheme.type.glyphHour,
+                        )
+                        NoirConditionGlyph(
+                            condition = NoirCondition.Rain,
+                            style = NoirTheme.type.glyphDay,
+                        )
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        NoirConditionGlyph(NoirCondition.Thunder, style = NoirTheme.type.glyphHero)
-                        NoirConditionGlyph(NoirCondition.Thunder, style = NoirTheme.type.glyphHour)
-                        NoirConditionGlyph(NoirCondition.Thunder, style = NoirTheme.type.glyphDay)
+                        NoirConditionGlyph(
+                            condition = NoirCondition.Thunder,
+                            style = NoirTheme.type.glyphHero,
+                        )
+                        NoirConditionGlyph(
+                            condition = NoirCondition.Thunder,
+                            style = NoirTheme.type.glyphHour,
+                        )
+                        NoirConditionGlyph(
+                            condition = NoirCondition.Thunder,
+                            style = NoirTheme.type.glyphDay,
+                        )
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        NoirConditionGlyph(NoirCondition.ClearNight, style = NoirTheme.type.glyphHero)
-                        NoirConditionGlyph(NoirCondition.ClearNight, style = NoirTheme.type.glyphHour)
-                        NoirConditionGlyph(NoirCondition.ClearNight, style = NoirTheme.type.glyphDay)
+                        NoirConditionGlyph(
+                            condition = NoirCondition.ClearNight,
+                            style = NoirTheme.type.glyphHero,
+                        )
+
+                        NoirConditionGlyph(
+                            condition = NoirCondition.ClearNight,
+                            style = NoirTheme.type.glyphHour,
+                        )
+
+                        NoirConditionGlyph(
+                            condition = NoirCondition.ClearNight,
+                            style = NoirTheme.type.glyphDay,
+                        )
                     }
 
                     NoirDotLeaderRow(
@@ -143,7 +174,11 @@ private fun PrimitiveGallery() {
                         horizontalArrangement = Arrangement.spacedBy(NoirSpacing.m),
                     ) {
                         NoirBlinkingCursor()
-                        NoirPipeDivider(Modifier.height(92.dp).width(16.dp))
+                        NoirPipeDivider(
+                            Modifier
+                                .height(92.dp)
+                                .width(16.dp)
+                        )
                         NoirPlaceholder("HUMIDITY ............ --")
                     }
 
@@ -154,18 +189,16 @@ private fun PrimitiveGallery() {
                             .fillMaxWidth()
                             .padding(top = NoirSpacing.m),
                         leading = {
-                            Icon(
-                                imageVector = NoirIcons.Search,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp),
-                            )
+
                         },
                         placeholder = "Name the city.",
                     )
 
                     NoirPanel(Modifier.padding(top = NoirSpacing.m)) {
-                        Text("Offline — cold trail from 09:12", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "Offline — cold trail from 09:12",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
 
                     NoirListRow(
@@ -176,12 +209,13 @@ private fun PrimitiveGallery() {
                     NoirHairlineDivider()
 
                     NoirEmptyStateMessage(
-                        glyph = NoirStateMark.Empty,
+                        glyph = NoirTypedIcon.Empty,
                         title = "No city. No case.",
                         body = "Every case starts with a city. Name one, or let me trace your steps.",
                     ) {
-                        NoirPrimaryAction("Trace my steps", onClick = {})
-                        NoirSecondaryAction("name a city instead", onClick = {})
+                        NoirPrimaryAction(
+                            text = "Trace my steps", onClick = {})
+                        NoirSecondaryAction(text = "name a city instead", onClick = {})
                     }
                 }
             }

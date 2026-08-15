@@ -25,7 +25,7 @@ import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
  */
 @Composable
 fun NoirEmptyStateMessage(
-    glyph: NoirStateMark,
+    glyph: NoirTypedIcon,
     title: String,
     body: String,
     modifier: Modifier = Modifier,
@@ -44,13 +44,13 @@ fun NoirEmptyStateMessage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(NoirSpacing.s),
     ) {
-        Text(
-            text = glyph.mark,
+        NoirGlyph(
+            glyph = glyph,
             style = NoirTheme.type.glyphHero.copy(
                 fontSize = GlyphSize,
                 lineHeight = GlyphSize,
             ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = title,

@@ -1,8 +1,6 @@
 package com.svyd.upcomingweather.feature.forecast.component
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,10 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
-import com.svyd.upcomingweather.core.designsystem.icon.NoirIcons
 import com.svyd.upcomingweather.core.designsystem.preview.NoirPreviews
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirGlyph
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirPanel
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSecondaryAction
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedIcon
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
 import com.svyd.upcomingweather.feature.forecast.R
@@ -30,11 +29,10 @@ fun OfflineBanner(
     onRetry: () -> Unit,
 ) {
     NoirPanel(modifier) {
-        Icon(
-            imageVector = NoirIcons.CloudOff,
-            contentDescription = stringResource(R.string.forecast_cd_offline),
+        NoirGlyph(
+            modifier = Modifier.padding(all = NoirSpacing.s),
+            glyph = NoirTypedIcon.CloudOff,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(IconSize),
         )
         Text(
             text = offline.text,

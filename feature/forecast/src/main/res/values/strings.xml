@@ -118,7 +118,7 @@
     <string name="forecast_offline">Offline — showing what was kept</string>
 
     <!-- Shown in place of a time while the forecast is still current. -->
-    <string name="forecast_still_current">The trail is still warm</string>
+    <string name="forecast_still_current">The trail is warm</string>
 
     <!-- Location was refused and the system will not offer the prompt again. -->
     <string name="forecast_refused_title">The city won\'t say.</string>

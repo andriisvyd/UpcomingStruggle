@@ -57,6 +57,8 @@ data class NoirTypography(
     val glyphHero: TextStyle = noir(44, 48, FontWeight.Bold),
     /** 16 sp Bold — typed glyph, hour column (28 dp slot). */
     val glyphHour: TextStyle = noir(16, 20, FontWeight.Bold),
+    /** 18 sp Medium — typed glyph, nav icon. */
+    val glyphNavIcon: TextStyle = noir(18, 20, FontWeight.SemiBold),
     /** 14 sp Bold — typed glyph, day row (24 dp slot). */
     val glyphDay: TextStyle = noir(14, 18, FontWeight.Bold),
     /** 11 / 14 sp Bold UPPERCASE +8% — ledger labels. */
