@@ -9,8 +9,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
@@ -19,9 +23,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import java.time.LocalDate
-import com.svyd.upcomingweather.feature.forecast.screen.DashboardRoute
-import com.svyd.upcomingweather.feature.forecast.screen.DayDetailsRoute
-import com.svyd.upcomingweather.feature.search.SearchRoute as SearchDestination
+import com.svyd.upcomingweather.feature.forecast.screen.DashboardScreen
+import com.svyd.upcomingweather.feature.forecast.screen.DayDetailsScreen
+import com.svyd.upcomingweather.feature.forecast.screen.SplashScreen
+import com.svyd.upcomingweather.feature.search.SearchScreen
 import com.svyd.upcomingweather.navigation.DayDetailsRoute
 import com.svyd.upcomingweather.navigation.ForecastRoute
 import com.svyd.upcomingweather.navigation.SearchRoute
@@ -30,13 +35,24 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /**
- * The whole app: one host, three destinations.
+ * The whole app: one host, three destinations, behind an opening.
  *
  * Nothing but navigation happens here. Each destination owns its own state, and the choice of city
  * travels between them through the domain rather than through this function.
+ *
+ * The splash sits outside the host rather than in it: it is not somewhere anyone can navigate to or
+ * back to, and there is no transition to speak of — the host replaces it on the frame it finishes.
+ * Whether it is finished is kept across configuration changes, so a rotation on the dashboard does
+ * not open the app again.
  */
 @Composable
 fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
+    var opened by rememberSaveable { mutableStateOf(false) }
+    if (!opened) {
+        SplashScreen(onDone = { opened = true }, modifier = modifier)
+        return
+    }
+
     val navController = rememberNavController()
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -59,7 +75,7 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
         exitTransition = { fadeOut() },
     ) {
         composable<ForecastRoute> {
-            DashboardRoute(
+            DashboardScreen(
                 onSearchClick = { navController.navigate(SearchRoute) },
                 onDayClick = { date -> navController.navigate(DayDetailsRoute(date)) },
                 onRequestLocationPermission = {
@@ -71,7 +87,7 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
         }
 
         composable<SearchRoute> {
-            SearchDestination(
+            SearchScreen(
                 onDone = { navController.popBackStack() },
                 onBack = navController::popBackStack,
                 onRequestLocationPermission = {
@@ -84,7 +100,7 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
 
         composable<DayDetailsRoute> { entry ->
             val route = entry.toRoute<DayDetailsRoute>()
-            DayDetailsRoute(
+            DayDetailsScreen(
                 date = LocalDate.parse(route.date),
                 onBack = navController::popBackStack,
             )
