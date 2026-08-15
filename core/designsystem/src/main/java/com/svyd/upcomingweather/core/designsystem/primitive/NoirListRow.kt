@@ -1,6 +1,8 @@
 package com.svyd.upcomingweather.core.designsystem.primitive
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,14 +36,28 @@ fun NoirListRow(
     supporting: String? = null,
     leading: @Composable (() -> Unit)? = null,
     headlineColor: Color = MaterialTheme.colorScheme.onSurface,
+    pressedTint: Color = MaterialTheme.colorScheme.primary,
+    supportingPressedTint: Color = MaterialTheme.colorScheme.primary,
     headlineStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     minHeight: Dp = NoirListRowDefaults.MinHeight,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onClick: (() -> Unit)? = null,
 ) {
+    val pressed by interactionSource.collectIsPressedAsState()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+            .then(
+                if (onClick != null)
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        role = Role.Button,
+                        onClick = onClick,
+                        indication = null,
+                    )
+                else
+                    Modifier
+            )
             .heightIn(min = minHeight)
             .padding(ContentPadding),
         verticalAlignment = Alignment.CenterVertically,
@@ -52,7 +70,7 @@ fun NoirListRow(
             Text(
                 text = headline,
                 style = headlineStyle,
-                color = headlineColor,
+                color = if (pressed) pressedTint else headlineColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -60,7 +78,7 @@ fun NoirListRow(
                 Text(
                     text = supporting,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (pressed) supportingPressedTint else MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = SupportingSpacing),

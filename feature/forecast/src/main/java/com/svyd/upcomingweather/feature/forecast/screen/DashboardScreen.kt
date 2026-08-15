@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -32,19 +33,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
-import com.svyd.upcomingweather.core.designsystem.icon.NoirIcons
 import com.svyd.upcomingweather.core.designsystem.preview.NoirScreenPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirStateMark
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedIcon
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirHairlineDivider
-import com.svyd.upcomingweather.core.designsystem.primitive.NoirIconButton
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBar
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTopBarTitle
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirPrimaryAction
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSecondaryAction
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirSectionStamp
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessage
+import com.svyd.upcomingweather.core.designsystem.primitive.NoirGlyph
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
+import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
 import com.svyd.upcomingweather.feature.forecast.R
 import com.svyd.upcomingweather.feature.forecast.component.Attribution
@@ -106,17 +107,23 @@ fun DashboardScreen(
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
                 navigation = {
-                    NoirIconButton(
-                        icon = NoirIcons.MyLocation,
-                        contentDescription = stringResource(R.string.forecast_cd_location),
+                    NoirGlyph(
+                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        glyph = NoirTypedIcon.Gps,
                         onClick = onLocationClick,
+                        style = NoirTheme.type.glyphNavIcon,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        pressedTint = MaterialTheme.colorScheme.primary,
                     )
                 },
                 actions = {
-                    NoirIconButton(
-                        icon = NoirIcons.Search,
-                        contentDescription = stringResource(R.string.forecast_cd_search),
+                    NoirGlyph(
+                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        glyph = NoirTypedIcon.Search,
+                        style = NoirTheme.type.glyphNavIcon,
                         onClick = onSearchClick,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        pressedTint = MaterialTheme.colorScheme.primary,
                     )
                 },
             ) {
@@ -140,37 +147,37 @@ fun DashboardScreen(
                 is ForecastUiState.Loading -> ForecastSkeleton()
 
                 ForecastUiState.Empty -> NoirEmptyStateMessage(
-                    glyph = NoirStateMark.Empty,
+                    glyph = NoirTypedIcon.Empty,
                     title = stringResource(R.string.forecast_empty_title),
                     body = stringResource(R.string.forecast_empty_body),
                 ) {
                     NoirPrimaryAction(
-                        stringResource(R.string.forecast_trace_action),
+                        text = stringResource(R.string.forecast_trace_action),
                         onClick = onLocationClick
                     )
                     NoirSecondaryAction(
-                        stringResource(R.string.forecast_name_city_action),
+                        text = stringResource(R.string.forecast_name_city_action),
                         onClick = onSearchClick
                     )
                 }
 
                 ForecastUiState.LocationUnavailable -> NoirEmptyStateMessage(
-                    glyph = NoirStateMark.Error,
+                    glyph = NoirTypedIcon.Error,
                     title = stringResource(R.string.forecast_no_position_title),
                     body = stringResource(R.string.forecast_no_position_body),
                 ) {
                     NoirPrimaryAction(
-                        stringResource(R.string.forecast_no_position_action),
+                        text = stringResource(R.string.forecast_no_position_action),
                         onClick = onLocationClick,
                     )
                     NoirSecondaryAction(
-                        stringResource(R.string.forecast_name_city_action),
+                        text = stringResource(R.string.forecast_name_city_action),
                         onClick = onSearchClick
                     )
                 }
 
                 is ForecastUiState.LocationRefused -> NoirEmptyStateMessage(
-                    glyph = NoirStateMark.Empty,
+                    glyph = NoirTypedIcon.Empty,
                     title = stringResource(R.string.forecast_refused_title),
                     body = stringResource(
                         if (state.canAskAgain) {
@@ -185,32 +192,32 @@ fun DashboardScreen(
                     // cannot work is worse than none, so only one of the two is ever drawn.
                     if (state.canAskAgain) {
                         NoirPrimaryAction(
-                            stringResource(R.string.forecast_refused_again_action),
+                            text = stringResource(R.string.forecast_refused_again_action),
                             onClick = onLocationClick,
                         )
                     } else {
                         NoirPrimaryAction(
-                            stringResource(R.string.forecast_refused_action),
+                            text = stringResource(R.string.forecast_refused_action),
                             onClick = onOpenSettings,
                         )
                     }
                     NoirSecondaryAction(
-                        stringResource(R.string.forecast_name_city_action),
+                        text = stringResource(R.string.forecast_name_city_action),
                         onClick = onSearchClick
                     )
                 }
 
                 ForecastUiState.Error -> NoirEmptyStateMessage(
-                    glyph = NoirStateMark.Error,
+                    glyph = NoirTypedIcon.Error,
                     title = stringResource(R.string.forecast_error_title),
                     body = stringResource(R.string.forecast_error_body),
                 ) {
                     NoirPrimaryAction(
-                        stringResource(R.string.forecast_error_action),
+                        text = stringResource(R.string.forecast_error_action),
                         onClick = onRetry
                     )
                     NoirSecondaryAction(
-                        stringResource(R.string.forecast_name_city_action),
+                        text = stringResource(R.string.forecast_name_city_action),
                         onClick = onSearchClick
                     )
                 }

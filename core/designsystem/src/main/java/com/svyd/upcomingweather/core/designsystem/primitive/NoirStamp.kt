@@ -13,7 +13,7 @@ import com.svyd.upcomingweather.core.designsystem.theme.NoirStroke
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 
 /**
- * A word rubber-stamped onto the page: uppercase, boxed in its own ink, off-square by two degrees.
+ * A word rubber-stamped onto the page: uppercase, boxed in its own ink, off-square by [StampTilt] degrees.
  *
  * Carries no meaning of its own — the caller decides what the word and the [ink] are.
  */

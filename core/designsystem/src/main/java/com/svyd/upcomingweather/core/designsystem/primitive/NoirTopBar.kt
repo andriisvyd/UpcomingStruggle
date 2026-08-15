@@ -62,7 +62,13 @@ fun NoirTopBar(
     }
 }
 
-/** The status line in the middle of the bar. */
+/**
+ * The status line in the middle of the bar.
+ *
+ * Not typed: the same place is reported on in more than one way — a status while a fetch runs, the
+ * temperature once the hero scrolls off — and a line that retyped at each of those would be the
+ * loudest thing on a page whose own lines had settled.
+ */
 @Composable
 fun NoirTopBarTitle(
     text: String,
