@@ -19,6 +19,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
 import com.svyd.upcomingweather.core.designsystem.preview.NoirScreenPreviews
@@ -47,6 +49,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirGlyph
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
+import com.svyd.upcomingweather.feature.forecast.ForecastViewModel
 import com.svyd.upcomingweather.feature.forecast.R
 import com.svyd.upcomingweather.feature.forecast.component.Attribution
 import com.svyd.upcomingweather.feature.forecast.component.DayRow
@@ -65,6 +68,7 @@ import com.svyd.upcomingweather.feature.forecast.model.HeroUi
 import com.svyd.upcomingweather.feature.forecast.model.HourUi
 import com.svyd.upcomingweather.feature.forecast.model.OfflineUi
 import com.svyd.upcomingweather.feature.forecast.model.ReadingUi
+import kotlinx.coroutines.flow.Flow
 
 private const val HERO_KEY = "hero"
 private const val HOURS_HEADER_KEY = "hoursHeader"
@@ -72,6 +76,42 @@ private const val HOURS_KEY = "hours"
 private const val READINGS_KEY = "readings"
 private const val DAYS_HEADER_KEY = "daysHeader"
 private const val ATTRIBUTION_KEY = "attribution"
+
+/**
+ * The dashboard, wired to what it draws.
+ *
+ * Kept apart from [DashboardScreen] so that one stays a function of its arguments — which is what
+ * lets every state of it be drawn in a preview.
+ */
+@Composable
+fun DashboardScreen(
+    modifier: Modifier = Modifier,
+    onSearchClick: () -> Unit,
+    onDayClick: (date: String) -> Unit,
+    onRequestLocationPermission: () -> Unit,
+    permissionResult: Flow<Boolean>,
+    onOpenSettings: () -> Unit,
+) {
+    val viewModel: ForecastViewModel = forecastViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = permissionResult) {
+        permissionResult.collect { canAskAgain ->
+            viewModel.useCurrentLocation(canAskAgain = canAskAgain)
+        }
+    }
+
+    DashboardScreen(
+        modifier = modifier,
+        state = state,
+        onLocationClick = onRequestLocationPermission,
+        onSearchClick = onSearchClick,
+        onRefresh = viewModel::refresh,
+        onRetry = viewModel::refresh,
+        onDayClick = onDayClick,
+        onOpenSettings = onOpenSettings,
+    )
+}
 
 /**
  * The dashboard. Today and the week live in one scroll.

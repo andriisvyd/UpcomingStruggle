@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
 import com.svyd.upcomingweather.core.designsystem.foundation.scaledByFont
@@ -41,6 +42,7 @@ import com.svyd.upcomingweather.core.designsystem.primitive.NoirMarkerBar
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 import com.svyd.upcomingweather.core.designsystem.theme.UpcomingWeatherTheme
+import com.svyd.upcomingweather.feature.forecast.DayDetailsViewModel
 import com.svyd.upcomingweather.feature.forecast.R
 import com.svyd.upcomingweather.feature.forecast.component.Attribution
 import com.svyd.upcomingweather.feature.forecast.component.ForecastSkeleton
@@ -51,6 +53,23 @@ import com.svyd.upcomingweather.feature.forecast.model.Freshness
 import com.svyd.upcomingweather.feature.forecast.model.HeroUi
 import com.svyd.upcomingweather.feature.forecast.model.ReadingUi
 import com.svyd.upcomingweather.feature.forecast.model.SlotUi
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+import java.time.LocalDate
+
+/** One day of that forecast. The date comes from the row that was tapped. */
+@Composable
+fun DayDetailsScreen(
+    date: LocalDate,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit,
+) {
+    val viewModel: DayDetailsViewModel = koinViewModel { parametersOf(date) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    DayDetailsScreen(modifier = modifier, state = state, onBack = onBack)
+}
+
 
 /**
  * One day, opened from a row of the five-day list.

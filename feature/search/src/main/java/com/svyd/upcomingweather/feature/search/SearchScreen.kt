@@ -10,10 +10,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirGlyph
@@ -31,6 +33,38 @@ import com.svyd.upcomingweather.feature.search.component.RecentsHeader
 import com.svyd.upcomingweather.feature.search.model.CityUi
 import com.svyd.upcomingweather.feature.search.model.SearchResultsUi
 import com.svyd.upcomingweather.feature.search.model.SearchUiState
+import org.koin.androidx.compose.koinViewModel
+
+/**
+ * Search, wired to what it draws.
+ *
+ * Picking a city is not a navigation result: the choice is written down and the forecast screen
+ * finds out by observing, so all this hands back is the instruction to close.
+ */
+@Composable
+fun SearchScreen(
+    modifier: Modifier = Modifier,
+    onRequestLocationPermission: () -> Unit,
+    onDone: () -> Unit,
+    onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    val viewModel: SearchViewModel = koinViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    SearchScreen(
+        modifier = modifier,
+        state = state,
+        onQueryChange = viewModel::query,
+        onClearQuery = viewModel::clearQuery,
+        onBack = onBack,
+        onCitySelected = { city -> viewModel.select(city, then = onDone) },
+        onUseCurrentLocation = onRequestLocationPermission,
+        onOpenSettings = onOpenSettings,
+        onRetry = viewModel::retry,
+    )
+}
+
 
 /**
  * Name a city, or let the phone name it for you.
