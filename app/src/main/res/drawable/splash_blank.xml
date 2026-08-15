@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The system splash wants an icon. This is the absence of one: the only mark the app shows on
+    launch is the one the splash screen types, and a launcher icon before it would read as a
+    second screen.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+    <solid android:color="@android:color/transparent" />
+</shape>
