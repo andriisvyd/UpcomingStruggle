@@ -3,4 +3,15 @@
     <style name="Theme.UpcomingWeather" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/noir_background</item>
     </style>
+
+    <!--
+        The theme the launcher opens into, handed back to Theme.UpcomingWeather once Compose draws.
+        Background, icon and window background are all the same flat color, so from the moment the
+        icon is tapped there is one surface on screen and the marks simply start turning over on it.
+    -->
+    <style name="Theme.UpcomingWeather.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/noir_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
+        <item name="postSplashScreenTheme">@style/Theme.UpcomingWeather</item>
+    </style>
 </resources>
