@@ -7,7 +7,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.svyd.upcomingweather.core.data.localsource.ForecastLocalSource
 import com.svyd.upcomingweather.core.data.localsource.dto.StoredForecast
 import com.svyd.upcomingweather.core.domain.model.Coordinates
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
 /**
@@ -24,20 +26,36 @@ internal class DataStoreForecastSource(
     private val limit: Int = DEFAULT_LIMIT,
 ) : ForecastLocalSource {
 
-    override suspend fun forecast(at: Coordinates): StoredForecast? = read()[at.key()]
+    /**
+     * The store's own stream, narrowed to one place.
+     *
+     * [distinctUntilChanged] because the object holds every place kept: saving one of them wakes
+     * every reader, and the ones watching a different place have nothing new to be told.
+     */
+    override fun forecast(at: Coordinates): Flow<StoredForecast?> =
+        store.data
+            .map { preferences -> preferences.read()[at.key()] }
+            .distinctUntilChanged()
 
-    /** Removing the key before adding it is what makes saving the same place again count as recent. */
+    /**
+     * Removing the key before adding it is what makes saving the same place again count as recent.
+     *
+     * Read and write inside the one edit, so two saves landing together cannot each build on the
+     * map as it was before the other.
+     */
     override suspend fun save(at: Coordinates, forecast: StoredForecast) {
-        val kept = ((read() - at.key()) + (at.key() to forecast))
-            .toList()
-            .takeLast(limit)
-            .toMap()
+        store.edit { preferences ->
+            val kept = ((preferences.read() - at.key()) + (at.key() to forecast))
+                .toList()
+                .takeLast(limit)
+                .toMap()
 
-        store.edit { it[FORECASTS] = json.encodeToString(kept) }
+            preferences[FORECASTS] = json.encodeToString(kept)
+        }
     }
 
-    private suspend fun read(): Map<String, StoredForecast> {
-        val raw = store.data.first()[FORECASTS] ?: return emptyMap()
+    private fun Preferences.read(): Map<String, StoredForecast> {
+        val raw = this[FORECASTS] ?: return emptyMap()
         return json.decodeOrNull<Map<String, StoredForecast>>(raw).orEmpty()
     }
 

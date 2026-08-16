@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.svyd.upcomingweather.core.data.localsource.dto.StoredPlace
 import com.svyd.upcomingweather.core.data.mapper.Fixtures
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -19,7 +20,7 @@ class DataStoreRecentsSourceTest {
 
     @Test
     fun `nothing has been looked at to begin with`() = runTest {
-        assertTrue(source().recentPlaces().isEmpty())
+        assertTrue(source().recentPlaces.first().isEmpty())
     }
 
     @Test
@@ -30,7 +31,7 @@ class DataStoreRecentsSourceTest {
 
         source.remember(budapest, LIMIT)
 
-        assertEquals(listOf(budapest, tokyo, lisbon), source.recentPlaces())
+        assertEquals(listOf(budapest, tokyo, lisbon), source.recentPlaces.first())
     }
 
     @Test
@@ -42,7 +43,7 @@ class DataStoreRecentsSourceTest {
 
         source.remember(budapest, LIMIT)
 
-        assertEquals(listOf(budapest, tokyo, lisbon), source.recentPlaces())
+        assertEquals(listOf(budapest, tokyo, lisbon), source.recentPlaces.first())
     }
 
     /** Two towns of the same name are two places, told apart by id rather than by name. */
@@ -53,7 +54,7 @@ class DataStoreRecentsSourceTest {
 
         source.remember(londonOhio, LIMIT)
 
-        assertEquals(listOf(londonOhio, londonEngland), source.recentPlaces())
+        assertEquals(listOf(londonOhio, londonEngland), source.recentPlaces.first())
     }
 
     @Test
@@ -64,7 +65,7 @@ class DataStoreRecentsSourceTest {
 
         source.remember(budapest, limit = 2)
 
-        assertEquals(listOf(budapest, tokyo), source.recentPlaces())
+        assertEquals(listOf(budapest, tokyo), source.recentPlaces.first())
     }
 
     @Test
@@ -72,7 +73,7 @@ class DataStoreRecentsSourceTest {
         val store = folder.preferences(this)
         store.edit { it[stringPreferencesKey("recents")] = "not json at all" }
 
-        assertTrue(DataStoreRecentsSource(store, Fixtures.json).recentPlaces().isEmpty())
+        assertTrue(DataStoreRecentsSource(store, Fixtures.json).recentPlaces.first().isEmpty())
     }
 
     private fun TestScope.source() = DataStoreRecentsSource(folder.preferences(this), Fixtures.json)

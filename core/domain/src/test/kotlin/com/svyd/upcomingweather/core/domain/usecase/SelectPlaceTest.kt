@@ -8,6 +8,7 @@ import com.svyd.upcomingweather.core.domain.repository.RecentPlacesRepository
 import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -57,7 +58,7 @@ class SelectPlaceTest {
     fun `a failing store leaves a failed result`() = runTest {
         val boom = IllegalStateException("disk full")
         val recents = object : RecentPlacesRepository {
-            override suspend fun recentPlaces(): List<Place> = emptyList()
+            override val recentPlaces: Flow<List<Place>> = flowOf(emptyList())
             override suspend fun remember(place: Place, limit: Int) = throw boom
         }
 
@@ -80,7 +81,7 @@ class SelectPlaceTest {
         val remembered = mutableListOf<Place>()
         val limits = mutableListOf<Int>()
 
-        override suspend fun recentPlaces(): List<Place> = remembered
+        override val recentPlaces: Flow<List<Place>> get() = flowOf(remembered)
 
         override suspend fun remember(place: Place, limit: Int) {
             remembered += place

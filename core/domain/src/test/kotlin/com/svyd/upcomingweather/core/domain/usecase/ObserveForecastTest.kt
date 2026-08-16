@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -264,9 +265,18 @@ class ObserveForecastTest {
             }
             cached?.let { emit(ForecastRead.Stale(it)) }
             gate?.invoke(at)
-            failWith?.let { throw it }
-            emit(ForecastRead.Fresh(fresh))
+            // Reported rather than thrown, as the repository now does: a lost connection ends the
+            // fetch, not the reading.
+            failWith?.let {
+                emit(ForecastRead.Failed(it))
+                return@flow
+            }
+            emit(ForecastRead.Cached(fresh))
         }
+
+        /** Read-only, and never a fetch. What the day details screen sees. */
+        override fun stored(at: SelectedPlace): Flow<Forecast?> =
+            flowOf(withinAge ?: cached ?: fresh)
     }
 
     private companion object {

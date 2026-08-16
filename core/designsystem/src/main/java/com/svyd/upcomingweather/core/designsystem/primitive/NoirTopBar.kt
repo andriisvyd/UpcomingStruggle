@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -19,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
 
@@ -44,11 +42,7 @@ fun NoirTopBar(
             // The bar clears the status bar itself, so no screen has to think about it.
             .windowInsetsPadding(windowInsets)
             // A minimum, not a height: the status line has to be able to grow with the type.
-            .heightIn(min = MinHeight)
-            .padding(
-                horizontal = HorizontalPadding,
-                vertical = VerticalPadding,
-            ),
+            .heightIn(min = MinHeight),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         navigation()
@@ -90,12 +84,8 @@ object NoirTopBarDefaults {
     val windowInsets: WindowInsets
         @Composable
         get() = WindowInsets.safeDrawing
-            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+            .only(WindowInsetsSides.Top)
 }
 
 /** A minimum, not a height — the status line has to be able to grow with the type. */
 private val MinHeight = NoirSpacing.appBarHeight
-
-/** The 48 dp icon slots supply the rest of the gutter. */
-private val HorizontalPadding = 4.dp
-private val VerticalPadding = 4.dp

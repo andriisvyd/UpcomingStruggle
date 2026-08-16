@@ -22,10 +22,10 @@ fun ReadingLedger(
     Column(modifier.fillMaxWidth()) {
         readings.forEach { reading ->
             NoirDotLeaderRow(
+                modifier = Modifier.padding(top = ReadingGap),
                 label = reading.label,
                 value = reading.value,
                 detail = reading.detail,
-                modifier = Modifier.padding(top = ReadingGap),
             )
         }
     }

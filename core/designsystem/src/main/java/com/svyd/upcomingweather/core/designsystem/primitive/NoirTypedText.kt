@@ -21,10 +21,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import com.svyd.upcomingweather.core.designsystem.foundation.LocalScreenTransitionScope
 import com.svyd.upcomingweather.core.designsystem.foundation.animationsEnabled
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A line that types itself onto the page, a block cursor riding the frontier.
@@ -42,7 +44,9 @@ import kotlinx.coroutines.delay
  * scrolled out of a list and back is still written, and words that replace it start from nothing.
  *
  * A [startDelay] holds the line back, cursor and all, so a block of them can be made to type top to
- * bottom by the page that lays them out rather than by anything they know about each other.
+ * bottom by the page that lays them out rather than by anything they know about each other. It is
+ * spent once. A line that has already written something and is now writing something else is not
+ * joining that queue again — it answers straight away, rather than sitting blank for its old turn.
  */
 @Composable
 fun NoirTypedText(
@@ -94,14 +98,24 @@ fun NoirTypedText(
     var started by remember(text.text) { mutableStateOf(false) }
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
+    // Deliberately outside the key above, so it survives the words changing.
+    var everTyped by remember { mutableStateOf(false) }
+    val animateChildren = LocalScreenTransitionScope.current?.animateChildren == true
+
     LaunchedEffect(text.text, typing) {
         // Written already: recycled back into view, or animations are off.
         if (typed >= text.length) return@LaunchedEffect
 
-        delay(startDelay)
+        // The wait is a place in a queue, and a queue only forms once. It is how a block of these
+        // is made to type top to bottom as it is first drawn; words that replace words already
+        // written are answering something, and holding the line blank while they wait reads as the
+        // page having lost its train of thought.
+        if (!everTyped && animateChildren) delay(startDelay)
+        everTyped = true
+
         started = true
         while (typed < text.length) {
-            delay(beat(text.text, typed))
+            delay(beat(text.text, typed).milliseconds)
             typed++
         }
     }
@@ -140,7 +154,7 @@ private fun beat(text: String, at: Int): Long {
 }
 
 /** A factor applied equally to all params of animation to scale animation speed */
-private const val TimingFactor = 1.4f
+private const val TimingFactor = 1f
 
 /** What a line of average length costs, before jitter and clause rests. */
 private const val BudgetMillis = 420 * TimingFactor

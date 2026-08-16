@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,15 +34,18 @@ fun NoirGlyphCycle(
     conditions: List<NoirCondition> = NoirCondition.entries,
     beat: Duration = Beat,
     style: TextStyle = NoirTheme.type.glyphHero,
+    onCycleEnd: (condition: NoirCondition) -> Unit = {},
 ) {
     val cycling = animationsEnabled()
     var index by remember(conditions) { mutableIntStateOf(0) }
+    val currentOnCycleEnd by rememberUpdatedState(onCycleEnd)
 
     LaunchedEffect(conditions, beat, cycling) {
         if (!cycling) return@LaunchedEffect
         while (true) {
             delay(beat)
             index = (index + 1) % conditions.size
+            currentOnCycleEnd(conditions[index])
         }
     }
 

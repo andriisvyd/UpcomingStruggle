@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
 import com.svyd.upcomingweather.core.designsystem.foundation.scaledByFont
+import com.svyd.upcomingweather.core.designsystem.foundation.travelsBetweenScreens
 import com.svyd.upcomingweather.core.designsystem.preview.NoirScreenPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessage
@@ -92,9 +94,12 @@ fun DayDetailsScreen(
     NoirBackground(modifier) {
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
+                modifier = Modifier
+                    .padding(horizontal = NoirSpacing.s)
+                    .travelsBetweenScreens(AppBarTravel),
                 navigation = {
                     NoirGlyph(
-                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        modifier = Modifier.size(NoirSpacing.touchTarget),
                         glyph = NoirTypedIcon.Back,
                         style = NoirTheme.type.glyphNavIcon,
                         onClick = onBack,
@@ -109,7 +114,7 @@ fun DayDetailsScreen(
             if (scrolled) NoirHairlineDivider()
 
             when (state) {
-                DayDetailsUiState.Loading -> ForecastSkeleton()
+                is DayDetailsUiState.Loading -> ForecastSkeleton()
 
                 DayDetailsUiState.Unavailable -> NoirEmptyStateMessage(
                     glyph = NoirTypedIcon.Empty,
@@ -119,7 +124,8 @@ fun DayDetailsScreen(
 
                 is DayDetailsUiState.Content -> DayLog(
                     state = state,
-                    scrollState = scrollState)
+                    scrollState = scrollState,
+                )
             }
         }
     }
@@ -163,8 +169,9 @@ private fun DayLog(
 @Composable
 private fun DayDetailsUiState.topBarTitle(): String = when (this) {
     is DayDetailsUiState.Content -> title
-    DayDetailsUiState.Loading, DayDetailsUiState.Unavailable ->
-        stringResource(R.string.forecast_app_title)
+    // Named before it is read, so the bar the list was under does not start saying the app's name.
+    is DayDetailsUiState.Loading -> title
+    DayDetailsUiState.Unavailable -> stringResource(R.string.forecast_app_title)
 }
 
 /** One 3-hour slot of the day log, its temperature marked on the day's own span. */

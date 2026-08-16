@@ -13,7 +13,7 @@ import com.svyd.upcomingweather.feature.forecast.mapper.forecast
 import com.svyd.upcomingweather.feature.forecast.mapper.week
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import java.time.Duration
 import java.time.LocalDate
 import java.time.ZoneId
@@ -45,11 +45,14 @@ internal class FakeSelection(initial: SelectedPlace? = budapest) : SelectedPlace
 
 /** Answers from the store every time, as the repository does inside the age. */
 internal class FakeForecasts(private val stored: Forecast = storedForecast) : ForecastRepository {
+
+    override fun stored(at: SelectedPlace): Flow<Forecast?> = flowOf(stored)
+
     override fun forecast(
         at: SelectedPlace,
         maxAge: Duration,
         force: Boolean,
-    ): Flow<ForecastRead> = flow { emit(ForecastRead.Cached(stored)) }
+    ): Flow<ForecastRead> = flowOf(ForecastRead.Cached(stored))
 }
 
 internal class FakePlaces : PlaceRepository {

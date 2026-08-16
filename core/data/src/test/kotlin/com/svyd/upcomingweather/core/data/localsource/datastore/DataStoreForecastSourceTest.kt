@@ -7,6 +7,7 @@ import com.svyd.upcomingweather.core.data.localsource.dto.StoredForecast
 import com.svyd.upcomingweather.core.data.localsource.dto.StoredLabel
 import com.svyd.upcomingweather.core.data.mapper.Fixtures
 import com.svyd.upcomingweather.core.domain.model.Coordinates
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -26,7 +27,7 @@ class DataStoreForecastSourceTest {
 
     @Test
     fun `nothing is kept for a place never fetched`() = runTest {
-        assertNull(source().forecast(budapest))
+        assertNull(source().forecast(budapest).first())
     }
 
     @Test
@@ -35,7 +36,7 @@ class DataStoreForecastSourceTest {
 
         source.save(budapest, forecast())
 
-        assertEquals(forecast(), source.forecast(budapest))
+        assertEquals(forecast(), source.forecast(budapest).first())
     }
 
     @Test
@@ -43,7 +44,7 @@ class DataStoreForecastSourceTest {
         val source = source()
         source.save(budapest, forecast())
 
-        assertNull(source.forecast(lisbon))
+        assertNull(source.forecast(lisbon).first())
     }
 
     @Test
@@ -52,8 +53,8 @@ class DataStoreForecastSourceTest {
         source.save(budapest, forecast())
         source.save(lisbon, forecast())
 
-        assertNotNull(source.forecast(budapest))
-        assertNotNull(source.forecast(lisbon))
+        assertNotNull(source.forecast(budapest).first())
+        assertNotNull(source.forecast(lisbon).first())
     }
 
     /** Saving it again counts as recent, so it is not the one dropped next. */
@@ -65,9 +66,9 @@ class DataStoreForecastSourceTest {
         source.save(Coordinates(1.0, 1.0), forecast())
         source.save(Coordinates(3.0, 3.0), forecast())
 
-        assertNull("the one not touched again is gone", source.forecast(Coordinates(2.0, 2.0)))
-        assertNotNull("the one saved again survived", source.forecast(Coordinates(1.0, 1.0)))
-        assertNotNull(source.forecast(Coordinates(3.0, 3.0)))
+        assertNull("the one not touched again is gone", source.forecast(Coordinates(2.0, 2.0)).first())
+        assertNotNull("the one saved again survived", source.forecast(Coordinates(1.0, 1.0)).first())
+        assertNotNull(source.forecast(Coordinates(3.0, 3.0)).first())
     }
 
     /** The whole object is rewritten on every save, so it cannot be allowed to grow forever. */
@@ -78,9 +79,9 @@ class DataStoreForecastSourceTest {
         source.save(Coordinates(2.0, 2.0), forecast())
         source.save(Coordinates(3.0, 3.0), forecast())
 
-        assertNull("the oldest is gone", source.forecast(Coordinates(1.0, 1.0)))
-        assertNotNull(source.forecast(Coordinates(2.0, 2.0)))
-        assertNotNull(source.forecast(Coordinates(3.0, 3.0)))
+        assertNull("the oldest is gone", source.forecast(Coordinates(1.0, 1.0)).first())
+        assertNotNull(source.forecast(Coordinates(2.0, 2.0)).first())
+        assertNotNull(source.forecast(Coordinates(3.0, 3.0)).first())
     }
 
     @Test
@@ -88,7 +89,7 @@ class DataStoreForecastSourceTest {
         val store = folder.preferences(this)
         store.edit { it[stringPreferencesKey("forecasts")] = "not json at all" }
 
-        assertNull(DataStoreForecastSource(store, Fixtures.json).forecast(budapest))
+        assertNull(DataStoreForecastSource(store, Fixtures.json).forecast(budapest).first())
     }
 
     private fun TestScope.source(limit: Int? = null) = limit

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -35,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
+import com.svyd.upcomingweather.core.designsystem.foundation.arrivesFromBelow
+import com.svyd.upcomingweather.core.designsystem.foundation.arrivesFromEnd
+import com.svyd.upcomingweather.core.designsystem.foundation.travelsBetweenScreens
 import com.svyd.upcomingweather.core.designsystem.preview.NoirScreenPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedIcon
@@ -56,6 +60,7 @@ import com.svyd.upcomingweather.feature.forecast.component.DayRow
 import com.svyd.upcomingweather.feature.forecast.component.ForecastSkeleton
 import com.svyd.upcomingweather.feature.forecast.component.HeroBlock
 import com.svyd.upcomingweather.feature.forecast.component.HourStrip
+import com.svyd.upcomingweather.feature.forecast.component.OpeningGlyphTravel
 import com.svyd.upcomingweather.feature.forecast.component.OfflineBanner
 import com.svyd.upcomingweather.feature.forecast.component.PullNotice
 import com.svyd.upcomingweather.feature.forecast.component.NoticeHeight
@@ -76,6 +81,19 @@ private const val HOURS_KEY = "hours"
 private const val READINGS_KEY = "readings"
 private const val DAYS_HEADER_KEY = "daysHeader"
 private const val ATTRIBUTION_KEY = "attribution"
+
+/**
+ * Where each part of the page falls in the stagger as the dashboard arrives.
+ *
+ * The hero has no step: the glyph travels to it from the splash and the lines type themselves in,
+ * which is already more motion than one block needs. Everything under it counts from the first
+ * thing the hero does not cover, so the page assembles downward at a steady beat.
+ */
+private const val HoursHeaderOrder = 0
+private const val HoursOrder = 1
+private const val ReadingsOrder = 2
+private const val DaysHeaderOrder = 3
+private const val DaysOrder = 4
 
 /**
  * The dashboard, wired to what it draws.
@@ -146,9 +164,12 @@ fun DashboardScreen(
     NoirBackground(modifier) {
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
+                modifier = Modifier
+                    .padding(horizontal = NoirSpacing.s)
+                    .travelsBetweenScreens(AppBarTravel),
                 navigation = {
                     NoirGlyph(
-                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        modifier = Modifier.size(NoirSpacing.touchTarget),
                         glyph = NoirTypedIcon.Gps,
                         onClick = onLocationClick,
                         style = NoirTheme.type.glyphNavIcon,
@@ -158,7 +179,7 @@ fun DashboardScreen(
                 },
                 actions = {
                     NoirGlyph(
-                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        modifier = Modifier.size(NoirSpacing.touchTarget),
                         glyph = NoirTypedIcon.Search,
                         style = NoirTheme.type.glyphNavIcon,
                         onClick = onSearchClick,
@@ -267,7 +288,6 @@ fun DashboardScreen(
                     listState = listState,
                     pull = pull,
                     onRefresh = onRefresh,
-                    onRetry = onRetry,
                     onDayClick = onDayClick,
                 )
             }
@@ -311,7 +331,6 @@ private fun DashboardContent(
     listState: LazyListState,
     pull: PullToRefreshState,
     onRefresh: () -> Unit,
-    onRetry: () -> Unit,
     onDayClick: (date: String) -> Unit,
 ) {
     val travel = with(LocalDensity.current) { NoticeHeight.toPx() }
@@ -345,12 +364,15 @@ private fun DashboardContent(
                 HeroBlock(
                     modifier = Modifier.padding(horizontal = NoirSpacing.gutter),
                     hero = content.hero,
+                    glyphTravel = OpeningGlyphTravel,
+                    busy = content.busy,
                 )
             }
 
             item(key = HOURS_HEADER_KEY) {
                 NoirSectionStamp(
                     modifier = Modifier
+                        .arrivesFromBelow(HoursHeaderOrder)
                         .padding(horizontal = NoirSpacing.gutter)
                         .padding(
                             top = NoirSpacing.section,
@@ -359,13 +381,19 @@ private fun DashboardContent(
                     text = stringResource(R.string.forecast_hours_header),
                 )
             }
+            // The one strip that scrolls sideways is the one that arrives sideways: what the page
+            // does on the way in says which way it can be moved once it is there.
             item(key = HOURS_KEY) {
-                HourStrip(hours = content.hours)
+                HourStrip(
+                    modifier = Modifier.arrivesFromEnd(HoursOrder),
+                    hours = content.hours,
+                )
             }
 
             item(key = READINGS_KEY) {
                 ReadingLedger(
                     modifier = Modifier
+                        .arrivesFromBelow(ReadingsOrder)
                         .padding(horizontal = NoirSpacing.gutter)
                         .padding(top = LedgerGap),
                     readings = content.readings,
@@ -375,22 +403,38 @@ private fun DashboardContent(
             item(key = DAYS_HEADER_KEY) {
                 NoirSectionStamp(
                     modifier = Modifier
+                        .arrivesFromBelow(DaysHeaderOrder)
                         .padding(horizontal = NoirSpacing.gutter)
                         .padding(top = NoirSpacing.section, bottom = NoirSpacing.m),
                     text = stringResource(R.string.forecast_days_header),
                 )
             }
             itemsIndexed(content.days) { index, day ->
+                // The rule and the row are two children of one item and take the same step, so a
+                // day arrives whole rather than the line under it catching up.
+                val order = DaysOrder + index
                 if (index > 0) {
-                    NoirHairlineDivider(Modifier.padding(horizontal = NoirSpacing.gutter))
+                    NoirHairlineDivider(
+                        Modifier
+                            .arrivesFromBelow(order)
+                            .padding(horizontal = NoirSpacing.gutter),
+                    )
                 }
                 // No padding here — the row pads its own content so the tap target reaches
                 // both screen edges.
-                DayRow(day = day, onClick = { onDayClick(day.date) })
+                DayRow(
+                    modifier = Modifier.arrivesFromBelow(order),
+                    day = day,
+                    onClick = { onDayClick(day.date) },
+                )
             }
 
             item(key = ATTRIBUTION_KEY) {
-                Attribution(Modifier.padding(horizontal = NoirSpacing.gutter))
+                Attribution(
+                    Modifier
+                        .arrivesFromBelow(DaysOrder + content.days.size)
+                        .padding(horizontal = NoirSpacing.gutter),
+                )
             }
         }
     }

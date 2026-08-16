@@ -7,13 +7,11 @@ import com.svyd.upcomingweather.core.domain.repository.ForecastRepository
 import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import java.time.Duration
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * The forecast for whatever place is selected, refetched whenever the selection changes or
@@ -41,25 +39,22 @@ class ObserveForecast(
             } else {
                 refresh.map { FORCED }
                     .onStart { emit(WITHIN_AGE) }
-                    .flatMapLatest { force -> fetch(place, force) }
+                    .flatMapLatest { force -> read(place, force) }
             }
         }
 
-    private fun fetch(place: SelectedPlace, force: Boolean): Flow<ForecastUpdate> =
+    private fun read(place: SelectedPlace, force: Boolean): Flow<ForecastUpdate> =
         forecasts.forecast(place, MAX_AGE, force)
             .map { read ->
                 when (read) {
                     is ForecastRead.Cached -> ForecastUpdate.Ready(read.forecast)
-                    is ForecastRead.Fresh -> ForecastUpdate.Ready(read.forecast)
                     is ForecastRead.Stale -> ForecastUpdate.Stale(read.forecast)
+                    // Not caught, and not the end of anything: storage goes on reporting after it,
+                    // so a forecast saved later still reaches whoever is reading.
+                    is ForecastRead.Failed -> ForecastUpdate.Failed(read.cause)
                 }
             }
             .onStart { emit(ForecastUpdate.Fetching) }
-            // A canceled fetch is not a failure to report: the reader has already moved on.
-            .catch { cause ->
-                if (cause is CancellationException) throw cause
-                emit(ForecastUpdate.Failed(cause))
-            }
 
     companion object {
         /**

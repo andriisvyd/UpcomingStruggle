@@ -99,6 +99,17 @@ internal class ForecastUiMapper(
     fun dayTitle(day: DayForecast, now: Instant, zone: ZoneId): String =
         strings.dayTitle(dayName(day.date, now.atZone(zone).toLocalDate()), day.date.format(DAY_DATE))
 
+    /**
+     * The same title from the date alone, for a page that has one before it has a forecast.
+     *
+     * Judges today on the reader's own clock, because the place's is not known until the forecast
+     * is read. Only the word can differ, and only for someone most of a day away from the place
+     * they are reading about — the date beside it is right either way, and the forecast settles it
+     * a frame later.
+     */
+    fun dayTitle(date: LocalDate, now: Instant): String =
+        strings.dayTitle(dayName(date, now.atZone(deviceZone()).toLocalDate()), date.format(DAY_DATE))
+
     fun dayLogHeader(day: DayForecast, now: Instant, zone: ZoneId): String =
         strings.dayLogHeader(dayName(day.date, now.atZone(zone).toLocalDate()))
 
