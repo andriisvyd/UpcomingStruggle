@@ -9,7 +9,7 @@ import com.svyd.upcomingweather.core.domain.repository.ForecastRepository
 import com.svyd.upcomingweather.core.domain.repository.PlaceRepository
 import com.svyd.upcomingweather.core.domain.repository.RecentPlacesRepository
 import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
-import com.svyd.upcomingweather.core.domain.usecase.GetRecentPlaces
+import com.svyd.upcomingweather.core.domain.usecase.ObserveRecentPlaces
 import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
 import com.svyd.upcomingweather.core.domain.usecase.SearchPlaces
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
@@ -58,7 +58,7 @@ class DataModuleTest {
         koin.get<SearchPlaces>()
         koin.get<SelectPlace>()
         koin.get<SelectCurrentPlace>()
-        koin.get<GetRecentPlaces>()
+        koin.get<ObserveRecentPlaces>()
     }
 
     /**

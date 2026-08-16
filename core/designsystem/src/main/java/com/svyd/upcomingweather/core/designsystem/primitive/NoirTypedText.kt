@@ -154,7 +154,7 @@ private fun beat(text: String, at: Int): Long {
 }
 
 /** A factor applied equally to all params of animation to scale animation speed */
-private const val TimingFactor = 1.4f
+private const val TimingFactor = 1f
 
 /** What a line of average length costs, before jitter and clause rests. */
 private const val BudgetMillis = 420 * TimingFactor

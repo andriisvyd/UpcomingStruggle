@@ -22,9 +22,9 @@ import com.svyd.upcomingweather.core.designsystem.theme.NoirTheme
  */
 @Composable
 fun NoirDotLeaderRow(
+    modifier: Modifier = Modifier,
     label: String,
     value: String,
-    modifier: Modifier = Modifier,
     detail: String? = null,
     valueColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {

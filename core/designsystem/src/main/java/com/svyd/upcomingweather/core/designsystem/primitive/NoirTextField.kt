@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
-import com.svyd.upcomingweather.core.designsystem.theme.NoirStroke
 
 /**
  * A flat single-line input: 48 dp tall, 4 dp radius, 1 dp stroke, amber caret.
@@ -52,18 +51,14 @@ fun NoirTextField(
         modifier = modifier
             .heightIn(min = MinHeight)
             .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .border(
-                width = NoirStroke.hairline,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = MaterialTheme.shapes.small,
-            )
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = HorizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
-            leading()
-            Box(Modifier.padding(end = SlotGap))
+            Box(Modifier.padding(end = SlotGap)) {
+                leading()
+            }
         }
         BasicTextField(
             value = value,
@@ -79,10 +74,7 @@ fun NoirTextField(
             keyboardOptions = KeyboardOptions(imeAction = imeAction),
             keyboardActions = KeyboardActions { onImeAction() },
             decorationBox = { field ->
-                Box(
-                    modifier = Modifier.padding(top = 4.dp),
-                    contentAlignment = Alignment.CenterStart,
-                    ) {
+                Box(contentAlignment = Alignment.CenterStart) {
                     if (value.isEmpty() && placeholder != null) {
                         Text(
                             text = placeholder,
@@ -95,8 +87,9 @@ fun NoirTextField(
             },
         )
         if (trailing != null) {
-            Box(Modifier.padding(start = SlotGap))
-            trailing()
+            Box(Modifier.padding(start = SlotGap)) {
+                trailing()
+            }
         }
     }
 }

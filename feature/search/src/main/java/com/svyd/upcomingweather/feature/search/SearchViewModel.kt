@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.svyd.upcomingweather.core.domain.failure.WeatherFailure
 import com.svyd.upcomingweather.core.domain.model.Place
 import com.svyd.upcomingweather.core.domain.model.SearchOutcome
-import com.svyd.upcomingweather.core.domain.usecase.GetRecentPlaces
+import com.svyd.upcomingweather.core.domain.usecase.ObserveRecentPlaces
 import com.svyd.upcomingweather.core.domain.usecase.SearchPlaces
 import com.svyd.upcomingweather.core.domain.usecase.SelectCurrentPlace
 import com.svyd.upcomingweather.core.domain.usecase.SelectPlace
@@ -23,8 +23,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,7 +41,7 @@ internal class SearchViewModel(
     private val searchPlaces: SearchPlaces,
     private val selectPlace: SelectPlace,
     private val selectCurrentPlace: SelectCurrentPlace,
-    private val recentPlaces: GetRecentPlaces,
+    private val recentPlaces: ObserveRecentPlaces,
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
@@ -110,35 +112,40 @@ internal class SearchViewModel(
     /**
      * A new query restarts the outer level after the typing settles; a retry restarts only the inner
      * one, so asking again does not wait out another pause.
+     *
+     * An empty field is not something anyone is in the middle of typing: it is the state the screen
+     * opens in and the state clearing it returns to, and the answer to it is already in hand. So it
+     * waits out no pause, and the recents are on screen with the screen.
      */
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     private fun searches(): Flow<SearchResultsUi> =
-        query.debounce(TYPING_PAUSE).flatMapLatest { text ->
-            retries.onStart { emit(Unit) }.flatMapLatest { results(text) }
+        query.debounce { text -> if (text.isBlank()) 0L else TYPING_PAUSE }.flatMapLatest { text ->
+            if (text.isBlank()) {
+                recents()
+            } else {
+                retries.onStart { emit(Unit) }.flatMapLatest { results(text) }
+            }
         }
 
     private fun results(text: String) = flow {
-        if (text.isBlank()) {
-            emit(recents())
-            return@flow
-        }
-
         searchPlaces(text)
-            .onSuccess { outcome -> emit(outcome.toResults(text)) }
+            .onSuccess { outcome ->
+                when (outcome) {
+                    // Too little typed to search on, so the list falls back to what was looked at
+                    // before — including everything filed since, which is why it is followed rather
+                    // than read.
+                    SearchOutcome.TooShort -> emitAll(recents())
+
+                    SearchOutcome.NoMatch -> emit(SearchResultsUi.NoResults(text))
+
+                    is SearchOutcome.Found -> emit(SearchResultsUi.Cities(outcome.places.listed()))
+                }
+            }
             .onFailure { emit(SearchResultsUi.Error) }
     }
 
-    private suspend fun SearchOutcome.toResults(text: String): SearchResultsUi = when (this) {
-        // Too little typed to search on, so the list falls back to what was looked at before.
-        SearchOutcome.TooShort -> recents()
-
-        SearchOutcome.NoMatch -> SearchResultsUi.NoResults(text)
-
-        is SearchOutcome.Found -> SearchResultsUi.Cities(places.listed())
-    }
-
-    private suspend fun recents(): SearchResultsUi =
-        SearchResultsUi.Recents(recentPlaces().getOrDefault(emptyList()).listed())
+    private fun recents(): Flow<SearchResultsUi> =
+        recentPlaces().map { places -> SearchResultsUi.Recents(places.listed()) }
 
     private fun List<Place>.listed(): List<CityUi> {
         shown = this

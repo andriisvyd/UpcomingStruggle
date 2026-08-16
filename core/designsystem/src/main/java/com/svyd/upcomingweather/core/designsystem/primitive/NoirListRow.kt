@@ -58,8 +58,7 @@ fun NoirListRow(
                 else
                     Modifier
             )
-            .heightIn(min = minHeight)
-            .padding(ContentPadding),
+            .heightIn(min = minHeight),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
@@ -97,4 +96,3 @@ object NoirListRowDefaults {
 /** Gap between the leading slot and the headline. */
 private val LeadingGap = 16.dp
 private val SupportingSpacing = 4.dp
-private val ContentPadding = 4.dp

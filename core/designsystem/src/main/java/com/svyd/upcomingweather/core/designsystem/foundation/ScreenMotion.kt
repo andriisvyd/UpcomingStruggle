@@ -1,6 +1,7 @@
 package com.svyd.upcomingweather.core.designsystem.foundation
 
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -10,15 +11,28 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.ExperimentalAnimationSpecApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.unit.IntOffset
+import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
+import kotlin.math.hypot
+import kotlin.math.max
 
 /**
  * The two scopes a screen change runs in, put where the pieces that move can reach them.
@@ -97,6 +111,57 @@ fun Modifier.travelsBetweenScreens(travel: ScreenTravel?): Modifier {
     }
 }
 
+/**
+ * Opens as a circle grown from the top-end glyph slot, and closes into the top-start one.
+ *
+ * The circle starts where the bar's action sits, because that is where the reader's finger was: the
+ * page is uncovered from under the thing that was tapped rather than pushed in from an edge nobody
+ * touched. Everything outside the circle is left unpainted, so what is underneath is the page this
+ * one was opened from.
+ *
+ * It closes into the other slot, where the way back is, and not back into the one it came out of.
+ * Both slots hold the same thing — the reader's way through — and the page opening from one and
+ * closing into the other is that way through drawn twice, out and back. Which slot is which is
+ * settled by the bar rather than by what was tapped: every way off the page ends the same, and a
+ * screen change that reported which row was chosen would be reporting the next screen's news.
+ *
+ * Applied by the navigation host to the screen it opens, not by the screen: how a page is arrived at
+ * is the host's business, and a page that decided it for itself could not be drawn in a preview.
+ */
+@Composable
+fun Modifier.opensAsCircle(): Modifier {
+    val moving = animationsEnabled()
+    val screen = LocalScreenTransitionScope.current?.scope
+    if (!moving || screen == null) return this
+
+    val fromTop = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding() +
+        NoirSpacing.appBarHeight / 2
+    val fromSide = NoirSpacing.s + NoirSpacing.touchTarget / 2
+    val open by screen.transition.animateFloat(
+        transitionSpec = { tween(RevealMillis, easing = FastOutSlowInEasing) },
+        label = "circularReveal",
+    ) { state -> if (state == EnterExitState.Visible) 1f else 0f }
+    // Settled the moment the page is on its way out, while the circle still covers the screen, so
+    // the side it is drawn from changes where nothing can be seen to change.
+    val leaving = screen.transition.targetState == EnterExitState.PostExit
+
+    return drawWithCache {
+        val side = if (leaving) fromSide.toPx() else size.width - fromSide.toPx()
+        val origin = Offset(x = side, y = fromTop.toPx())
+        // The corner furthest from the origin is the last thing the circle has to reach.
+        val reach = hypot(
+            max(origin.x, size.width - origin.x),
+            max(origin.y, size.height - origin.y),
+        )
+        val circle = Path()
+        onDrawWithContent {
+            circle.rewind()
+            circle.addOval(Rect(center = origin, radius = reach * open))
+            clipPath(circle) { this@onDrawWithContent.drawContent() }
+        }
+    }
+}
+
 /** Arrives from below its own place, [order] steps down the stagger. */
 @Composable
 fun Modifier.arrivesFromBelow(order: Int): Modifier = arrives(order) { delay ->
@@ -131,10 +196,15 @@ private fun slide(delayMillis: Int) =
     tween<IntOffset>(SlideMillis, delayMillis = delayMillis, easing = LinearOutSlowInEasing)
 
 /** Long enough to read as travel, short enough that nobody waits on it. */
-const val TravelMillis = 490
+const val TravelMillis = 520
 
 /** One element's slide. */
 private const val SlideMillis = 420
 
 /** The step between one element starting and the next. A beat, not a queue. */
 private const val StaggerMillis = 120
+
+/** The circle crossing the page. Longer than a slide: it has a diagonal to cover. */
+private const val RevealMillis = 400
+
+

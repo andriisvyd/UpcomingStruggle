@@ -6,7 +6,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.svyd.upcomingweather.core.data.localsource.RecentsLocalSource
 import com.svyd.upcomingweather.core.data.localsource.dto.StoredPlace
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
 internal class DataStoreRecentsSource(
@@ -14,7 +15,7 @@ internal class DataStoreRecentsSource(
     private val json: Json,
 ) : RecentsLocalSource {
 
-    override suspend fun recentPlaces(): List<StoredPlace> = store.data.first().read()
+    override val recentPlaces: Flow<List<StoredPlace>> = store.data.map { it.read() }
 
     /**
      * Read, reorder and write in one edit.

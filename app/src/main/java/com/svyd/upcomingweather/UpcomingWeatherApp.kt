@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.core.app.ActivityCompat
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -37,6 +38,7 @@ import com.svyd.upcomingweather.feature.search.SearchScreen
 import com.svyd.upcomingweather.core.designsystem.foundation.LocalScreenTransitionScope
 import com.svyd.upcomingweather.core.designsystem.foundation.LocalSharedTransitionScope
 import com.svyd.upcomingweather.core.designsystem.foundation.ScreenTransitionScope
+import com.svyd.upcomingweather.core.designsystem.foundation.opensAsCircle
 import com.svyd.upcomingweather.navigation.DayDetailsRoute
 import com.svyd.upcomingweather.navigation.ForecastRoute
 import com.svyd.upcomingweather.navigation.SearchRoute
@@ -88,10 +90,12 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
                 // watch. What the dashboard does with the rest of its content is the dashboard's.
 
                 composable<SplashRoute>(exitTransition = { ExitTransition.None }) {
-                    CompositionLocalProvider(LocalScreenTransitionScope provides ScreenTransitionScope(
-                        scope = this,
-                        animateChildren = false,
-                    )) {
+                    CompositionLocalProvider(
+                        LocalScreenTransitionScope provides ScreenTransitionScope(
+                            scope = this,
+                            animateChildren = false,
+                        )
+                    ) {
                         SplashScreen(
                             onDone = {
                                 navController.navigate(ForecastRoute) {
@@ -105,11 +109,22 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
                 composable<ForecastRoute>(
                     enterTransition = { EnterTransition.None },
                     popEnterTransition = { EnterTransition.None },
+                    // Search opens as a circle over this page: a page sliding out from under the
+                    // circle would be a second thing to watch. A day still takes the parallax.
+                    exitTransition = {
+                        if (targetState.destination.hasRoute<SearchRoute>()) {
+                            ExitTransition.None
+                        } else {
+                            slideOutHorizontally(SlideSpec) { width -> -width / 4 }
+                        }
+                    },
                 ) {
-                    CompositionLocalProvider(LocalScreenTransitionScope provides ScreenTransitionScope(
-                        scope = this,
-                        animateChildren = firstVisit(),
-                    )) {
+                    CompositionLocalProvider(
+                        LocalScreenTransitionScope provides ScreenTransitionScope(
+                            scope = this,
+                            animateChildren = firstVisit(),
+                        )
+                    ) {
                         DashboardScreen(
                             onSearchClick = { navController.navigate(SearchRoute) },
                             onDayClick = { date -> navController.navigate(DayDetailsRoute(date)) },
@@ -122,27 +137,42 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
                     }
                 }
 
-                composable<SearchRoute> {
-                    SearchScreen(
-                        onDone = { navController.popBackStack() },
-                        onBack = navController::popBackStack,
-                        onRequestLocationPermission = {
-                            permissionLauncher.launch(LOCATION_PERMISSIONS)
-                            navController.popBackStack()
-                        },
-                        onOpenSettings = { context.openAppSettings() },
-                    )
+                // The circle is the whole transition, in both directions: nothing slides, and the
+                // page is held on screen on the way out by the circle still closing.
+                composable<SearchRoute>(
+                    enterTransition = { EnterTransition.None },
+                    popExitTransition = { ExitTransition.None },
+                ) {
+                    CompositionLocalProvider(
+                        LocalScreenTransitionScope provides ScreenTransitionScope(
+                            scope = this,
+                            // The rows here arrive on the beat their own list sets, not on the
+                            // screen change. The scope is what the circle is cut from, and it is
+                            // here for nothing else.
+                            animateChildren = false,
+                        )
+                    ) {
+                        SearchScreen(
+                            modifier = Modifier.opensAsCircle(),
+                            onDone = { navController.popBackStack() },
+                            onBack = navController::popBackStack,
+                            onRequestLocationPermission = {
+                                permissionLauncher.launch(LOCATION_PERMISSIONS)
+                                navController.popBackStack()
+                            },
+                            onOpenSettings = { context.openAppSettings() },
+                        )
+                    }
                 }
 
                 composable<DayDetailsRoute> { entry ->
                     val route = entry.toRoute<DayDetailsRoute>()
-                    CompositionLocalProvider(LocalScreenTransitionScope provides ScreenTransitionScope(
-                        scope = this,
-                        // Nothing on this page arrives under its own steam. The scope is here so the
-                        // bar can be recognised as the same bar the dashboard was under, and for
-                        // nothing else.
-                        animateChildren = false,
-                    )) {
+                    CompositionLocalProvider(
+                        LocalScreenTransitionScope provides ScreenTransitionScope(
+                            scope = this,
+                            animateChildren = true,
+                        )
+                    ) {
                         DayDetailsScreen(
                             date = LocalDate.parse(route.date),
                             onBack = navController::popBackStack,

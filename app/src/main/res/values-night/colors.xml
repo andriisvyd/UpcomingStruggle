@@ -2,4 +2,10 @@
 <resources>
     <!-- Night · the native mood. -->
     <color name="noir_background">#0B0E13</color>
+
+    <!-- Night · the same ground under grain at 0.08. -->
+    <color name="noir_background_grained">#14171C</color>
+
+    <!-- Night · sodium, at its night grade. -->
+    <color name="noir_sodium">#D9A050</color>
 </resources>
