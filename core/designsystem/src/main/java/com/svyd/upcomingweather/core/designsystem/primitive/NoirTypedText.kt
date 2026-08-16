@@ -26,6 +26,7 @@ import com.svyd.upcomingweather.core.designsystem.foundation.animationsEnabled
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A line that types itself onto the page, a block cursor riding the frontier.
@@ -114,7 +115,7 @@ fun NoirTypedText(
 
         started = true
         while (typed < text.length) {
-            delay(beat(text.text, typed))
+            delay(beat(text.text, typed).milliseconds)
             typed++
         }
     }
