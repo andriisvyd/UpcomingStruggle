@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -163,10 +164,12 @@ fun DashboardScreen(
     NoirBackground(modifier) {
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
-                modifier = Modifier.travelsBetweenScreens(AppBarTravel),
+                modifier = Modifier
+                    .padding(horizontal = NoirSpacing.s)
+                    .travelsBetweenScreens(AppBarTravel),
                 navigation = {
                     NoirGlyph(
-                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        modifier = Modifier.size(NoirSpacing.touchTarget),
                         glyph = NoirTypedIcon.Gps,
                         onClick = onLocationClick,
                         style = NoirTheme.type.glyphNavIcon,
@@ -176,7 +179,7 @@ fun DashboardScreen(
                 },
                 actions = {
                     NoirGlyph(
-                        modifier = Modifier.padding(all = NoirSpacing.m),
+                        modifier = Modifier.size(NoirSpacing.touchTarget),
                         glyph = NoirTypedIcon.Search,
                         style = NoirTheme.type.glyphNavIcon,
                         onClick = onSearchClick,
