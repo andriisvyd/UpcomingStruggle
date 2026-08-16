@@ -42,25 +42,27 @@ fun NoirBlinkingCursor(
     width: TextUnit = NoirPlaceholderDefaults.CursorWidth,
     height: TextUnit = NoirPlaceholderDefaults.CursorHeight,
     color: Color = MaterialTheme.colorScheme.primary,
+    invertedBlink: Boolean = false,
 ) {
     val size = with(LocalDensity.current) { DpSize(width.toDp(), height.toDp()) }
-
+    val initial = if (invertedBlink) 0f else 1f
+    val target = if (invertedBlink) 1f else 0f
     // With animations off the cursor holds at full opacity: it marks where the next value lands,
     // so it stays visible and only the motion stops.
     val alpha = if (animationsEnabled()) {
         val transition = rememberInfiniteTransition(label = "cursor")
         transition.animateFloat(
-            initialValue = 1f,
-            targetValue = 0f,
+            initialValue = initial,
+            targetValue = target,
             animationSpec = infiniteRepeatable(
                 // Two holds and a crossing: the value stays at 1 through the first half, then the
                 // one-millisecond gap between the second and third keyframes steps it to 0 without
                 // an interpolated fade.
                 animation = keyframes {
                     durationMillis = BlinkMillis * 2
-                    1f at 0
-                    1f at BlinkMillis - 1
-                    0f at BlinkMillis
+                    initial at 0
+                    initial at BlinkMillis - 1
+                    target at BlinkMillis
                 },
                 repeatMode = RepeatMode.Restart,
             ),

@@ -62,8 +62,30 @@ class DayDetailsViewModelTest {
         )
     }
 
-    private fun viewModel() = DayDetailsViewModel(
-        observeDay = ObserveDay(ObserveForecast(FakeSelection(), FakeForecasts())),
+    /**
+     * The page a stored day is already on does not empty itself when the fetch behind it fails.
+     *
+     * This is what opening a day past its age with no connection looks like: storage answers, the
+     * fetch goes out behind it and comes back with nothing.
+     */
+    @Test
+    fun `a failed fetch behind a day already drawn does not empty the page`() = runTest {
+        val viewModel = viewModel(failing = true)
+
+        val states = mutableListOf<DayDetailsUiState>()
+        val watching = backgroundScope.launch { viewModel.state.collect(states::add) }
+        advanceTimeBy(1_000)
+        watching.cancel()
+
+        assertTrue("expected the stored day: $states", states.any { it is DayDetailsUiState.Content })
+        assertTrue(
+            "the page reported the day unavailable over one it was drawing: $states",
+            states.none { it is DayDetailsUiState.Unavailable },
+        )
+    }
+
+    private fun viewModel(failing: Boolean = false) = DayDetailsViewModel(
+        observeDay = ObserveDay(ObserveForecast(FakeSelection(), FakeForecasts(failing = failing))),
         date = testDate,
         mapper = ForecastUiMapper(
             strings = FakeForecastStrings(),

@@ -54,6 +54,11 @@ internal class DayDetailsViewModel(
     private fun toUiState(update: DayUpdate): DayDetailsUiState = when (update) {
         // A fetch behind a day already drawn changes nothing on screen; only an empty page waits.
         DayUpdate.Fetching -> rendered as? DayDetailsUiState.Content ?: DayDetailsUiState.Loading
+
+        // The same for a fetch that failed behind one. The day on screen came from storage and is
+        // no less true for the next fetch having gone nowhere; only an empty page reports it.
+        DayUpdate.Failed -> rendered as? DayDetailsUiState.Content ?: DayDetailsUiState.Unavailable
+
         DayUpdate.Unavailable -> DayDetailsUiState.Unavailable
         is DayUpdate.Stale -> content(update.day, update.retrievedAt)
         is DayUpdate.Ready -> content(update.day, update.retrievedAt)

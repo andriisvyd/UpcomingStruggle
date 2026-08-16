@@ -85,14 +85,41 @@ class ObserveDayTest {
     }
 
     @Test
-    fun `a failed fetch leaves nothing to show`() = runTest {
+    fun `a failed fetch with nothing stored is reported as a failure`() = runTest {
         val world = World(this)
         world.forecasts.failWith = IOException("connection refused")
         val updates = world.observe(FIRST_DAY)
 
         world.selection.value = budapest
 
-        assertEquals(DayUpdate.Unavailable, updates.last())
+        assertEquals(DayUpdate.Failed, updates.last())
+    }
+
+    /**
+     * The failure a stored day is read out ahead of says nothing about that day.
+     *
+     * Storage answers first and the fetch goes out behind it, so this is the ordinary shape of
+     * opening a day past its age with no connection — and reporting the day absent would take one
+     * that is in hand off the screen.
+     */
+    @Test
+    fun `a stored day is not made unavailable by the fetch behind it failing`() = runTest {
+        val world = World(this)
+        world.forecasts.stored = world.forecasts.fresh
+        world.forecasts.failWith = IOException("connection refused")
+        val updates = world.observe(FIRST_DAY)
+
+        world.selection.value = budapest
+
+        assertEquals(
+            listOf(
+                DayUpdate.Unavailable,
+                DayUpdate.Fetching,
+                DayUpdate.Stale(world.forecasts.fresh.days.first(), world.forecasts.fresh.retrievedAt),
+                DayUpdate.Failed,
+            ),
+            updates,
+        )
     }
 
     private class World(private val scope: TestScope) {

@@ -53,6 +53,7 @@ fun NoirGlyph(
     glyph: NoirTypedIcon,
     onClick: (() -> Unit)? = null,
     tint: Color = Color.Unspecified,
+    trim: Boolean = false,
     pressedTint: Color = MaterialTheme.colorScheme.primary,
     style: TextStyle = NoirTheme.type.glyphHour,
 ) {
@@ -67,7 +68,7 @@ fun NoirGlyph(
                 onClick = onClick,
             )
         ) else modifier,
-        text = glyph.mark,
+        text = if (trim) glyph.mark.trim() else glyph.mark,
         style = style,
         color = if (pressed && onClick != null) pressedTint else tint,
         // A three-character mark is wider than the slot it sits in; it spills into the gap
@@ -89,11 +90,13 @@ fun NoirConditionGlyph(
     modifier: Modifier = Modifier,
     condition: NoirCondition,
     style: TextStyle = NoirTheme.type.glyphDay,
+    trim: Boolean = false,
     color: Color = condition.ink(),
 ) {
     NoirGlyph(
         modifier = modifier,
         glyph = NoirTypedIcon.Condition(condition),
+        trim = trim,
         style = style,
         tint = color
     )

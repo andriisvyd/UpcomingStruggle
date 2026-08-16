@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirInsetDefaults
 import com.svyd.upcomingweather.core.designsystem.foundation.scaledByFont
+import com.svyd.upcomingweather.core.designsystem.foundation.travelsBetweenScreens
 import com.svyd.upcomingweather.core.designsystem.preview.NoirScreenPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirCondition
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirEmptyStateMessage
@@ -92,6 +93,7 @@ fun DayDetailsScreen(
     NoirBackground(modifier) {
         Column(Modifier.fillMaxSize()) {
             NoirTopBar(
+                modifier = Modifier.travelsBetweenScreens(AppBarTravel),
                 navigation = {
                     NoirGlyph(
                         modifier = Modifier.padding(all = NoirSpacing.m),
@@ -119,7 +121,8 @@ fun DayDetailsScreen(
 
                 is DayDetailsUiState.Content -> DayLog(
                     state = state,
-                    scrollState = scrollState)
+                    scrollState = scrollState,
+                )
             }
         }
     }

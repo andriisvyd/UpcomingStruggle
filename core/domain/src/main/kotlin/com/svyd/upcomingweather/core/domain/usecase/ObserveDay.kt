@@ -25,10 +25,14 @@ class ObserveDay(private val forecasts: ObserveForecast) {
 
                 is ForecastUpdate.Ready -> update.forecast.day(date)
                     .orUnavailable { DayUpdate.Ready(it, update.forecast.retrievedAt) }
-                // A day cannot be looked up in a forecast that is missing or never arrived, and a
-                // screen showing one day has nothing else to say about either.
+                // A day cannot be looked up in a forecast that is missing.
                 ForecastUpdate.NoPlace -> DayUpdate.Unavailable
-                is ForecastUpdate.Failed -> DayUpdate.Unavailable
+
+                // A fetch that did not land is not the same as a day that is not there. A stored
+                // forecast past its age is read out first and the fetch goes out behind it, so by
+                // the time this arrives the day is usually already in hand — and reporting it as
+                // absent would take that day off the screen.
+                is ForecastUpdate.Failed -> DayUpdate.Failed
             }
         }
 
