@@ -29,7 +29,7 @@ import com.svyd.upcomingweather.core.domain.repository.ForecastRepository
 import com.svyd.upcomingweather.core.domain.repository.PlaceRepository
 import com.svyd.upcomingweather.core.domain.repository.RecentPlacesRepository
 import com.svyd.upcomingweather.core.domain.repository.SelectedPlaceRepository
-import com.svyd.upcomingweather.core.domain.usecase.GetRecentPlaces
+import com.svyd.upcomingweather.core.domain.usecase.ObserveRecentPlaces
 import com.svyd.upcomingweather.core.domain.usecase.ObserveDay
 import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
 import com.svyd.upcomingweather.core.domain.usecase.SearchPlaces
@@ -125,14 +125,16 @@ val dataModule = module {
     single<SelectedPlaceRepository> {
         DefaultSelectedPlaceRepository(selections = get(), scope = get(named(APP_SCOPE)))
     }
-    single<RecentPlacesRepository> { DefaultRecentPlacesRepository(recents = get()) }
+    single<RecentPlacesRepository> {
+        DefaultRecentPlacesRepository(recents = get(), scope = get(named(APP_SCOPE)))
+    }
 
     factory { ObserveForecast(selection = get(), forecasts = get()) }
     factory { ObserveDay(selection = get(), forecasts = get()) }
     factory { SearchPlaces(places = get()) }
     factory { SelectPlace(selection = get(), recents = get()) }
     factory { SelectCurrentPlace(places = get(), selection = get()) }
-    factory { GetRecentPlaces(recents = get()) }
+    factory { ObserveRecentPlaces(recents = get()) }
 }
 
 private fun retrofit(client: OkHttpClient, json: Json, baseUrl: String): Retrofit =
