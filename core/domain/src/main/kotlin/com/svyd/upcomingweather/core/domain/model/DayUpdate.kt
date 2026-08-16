@@ -6,8 +6,9 @@ import java.time.Instant
  * What is known about one day of the forecast, as it changes.
  *
  * Fewer cases than [ForecastUpdate], because a single day is only ever read and never refreshed on
- * its own: a forecast that is missing, still arriving or failed all leave nothing of that day to
- * show, and [Unavailable] covers the three.
+ * its own. [Failed] is kept apart from [Unavailable] all the same: a fetch that did not land says
+ * nothing about whether the day is in the forecast, and a stored day is very often already drawn
+ * by the time it fails.
  */
 sealed interface DayUpdate {
 
@@ -19,6 +20,9 @@ sealed interface DayUpdate {
 
     /** A day, settled. */
     data class Ready(val day: DayForecast, val retrievedAt: Instant) : DayUpdate
+
+    /** The forecast could not be fetched. Whatever was stored is still what it was. */
+    data object Failed : DayUpdate
 
     /** No such day in the forecast, or no forecast to look in. */
     data object Unavailable : DayUpdate

@@ -14,6 +14,7 @@ import com.svyd.upcomingweather.feature.forecast.mapper.week
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import java.io.IOException
 import java.time.Duration
 import java.time.LocalDate
 import java.time.ZoneId
@@ -43,13 +44,27 @@ internal class FakeSelection(initial: SelectedPlace? = budapest) : SelectedPlace
     }
 }
 
-/** Answers from the store every time, as the repository does inside the age. */
-internal class FakeForecasts(private val stored: Forecast = storedForecast) : ForecastRepository {
+/**
+ * Answers from the store every time, as the repository does inside the age.
+ *
+ * [failing] is the shape of opening a day past that age with no connection: storage answers first
+ * and the fetch behind it comes back with nothing.
+ */
+internal class FakeForecasts(
+    private val stored: Forecast = storedForecast,
+    private val failing: Boolean = false,
+) : ForecastRepository {
     override fun forecast(
         at: SelectedPlace,
         maxAge: Duration,
         force: Boolean,
-    ): Flow<ForecastRead> = flow { emit(ForecastRead.Cached(stored)) }
+    ): Flow<ForecastRead> = flow {
+        if (failing) {
+            emit(ForecastRead.Stale(stored))
+            throw IOException("connection refused")
+        }
+        emit(ForecastRead.Cached(stored))
+    }
 }
 
 internal class FakePlaces : PlaceRepository {
