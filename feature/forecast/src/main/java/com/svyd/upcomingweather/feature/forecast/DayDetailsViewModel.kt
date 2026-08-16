@@ -7,7 +7,6 @@ import com.svyd.upcomingweather.core.domain.model.DayUpdate
 import com.svyd.upcomingweather.core.domain.usecase.ObserveDay
 import com.svyd.upcomingweather.feature.forecast.mapper.ForecastUiMapper
 import com.svyd.upcomingweather.feature.forecast.model.DayDetailsUiState
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.StateFlow
@@ -30,37 +29,27 @@ internal class DayDetailsViewModel(
     private val clock: Clock,
 ) : ViewModel() {
 
-    private val refresh = MutableSharedFlow<Unit>()
-
     /**
-     * What the screen last showed.
+     * Nothing is held between emissions any more.
      *
-     * Held here rather than carried through the stream, because the stream does not outlive the
-     * screen: it stops with the last subscriber and starts again from the beginning. A fetch
-     * announces itself on every restart, and without something that remembers the day already
-     * drawn it would empty the page each time.
+     * The stream reads storage, so restarting it — leaving the screen and coming back, or the app
+     * being backgrounded — asks the same question and gets the same answer straight away. There is
+     * no announcement of work under way to absorb, and nothing that can empty a page it has already
+     * filled, so the screen no longer has to remember what it last drew in order to defend it.
      */
-    private var rendered: DayDetailsUiState = DayDetailsUiState.Loading
-
     val state: StateFlow<DayDetailsUiState> =
-        combine(observeDay(date, refresh), ticks()) { update, _ -> update }
-            .map { update -> toUiState(update).also { rendered = it } }
+        combine(observeDay(date), ticks()) { update, _ -> update }
+            .map(::toUiState)
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(SUBSCRIPTION_GRACE),
-                initialValue = DayDetailsUiState.Loading,
+                // Which day this is was settled by the tap that opened the screen, so the bar can
+                // name it before anything has been read.
+                initialValue = DayDetailsUiState.Loading(mapper.dayTitle(date, clock.instant())),
             )
 
     private fun toUiState(update: DayUpdate): DayDetailsUiState = when (update) {
-        // A fetch behind a day already drawn changes nothing on screen; only an empty page waits.
-        DayUpdate.Fetching -> rendered as? DayDetailsUiState.Content ?: DayDetailsUiState.Loading
-
-        // The same for a fetch that failed behind one. The day on screen came from storage and is
-        // no less true for the next fetch having gone nowhere; only an empty page reports it.
-        DayUpdate.Failed -> rendered as? DayDetailsUiState.Content ?: DayDetailsUiState.Unavailable
-
         DayUpdate.Unavailable -> DayDetailsUiState.Unavailable
-        is DayUpdate.Stale -> content(update.day, update.retrievedAt)
         is DayUpdate.Ready -> content(update.day, update.retrievedAt)
     }
 
