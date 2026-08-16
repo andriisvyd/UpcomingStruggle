@@ -111,7 +111,7 @@ fun DayDetailsScreen(
             if (scrolled) NoirHairlineDivider()
 
             when (state) {
-                DayDetailsUiState.Loading -> ForecastSkeleton()
+                is DayDetailsUiState.Loading -> ForecastSkeleton()
 
                 DayDetailsUiState.Unavailable -> NoirEmptyStateMessage(
                     glyph = NoirTypedIcon.Empty,
@@ -166,8 +166,9 @@ private fun DayLog(
 @Composable
 private fun DayDetailsUiState.topBarTitle(): String = when (this) {
     is DayDetailsUiState.Content -> title
-    DayDetailsUiState.Loading, DayDetailsUiState.Unavailable ->
-        stringResource(R.string.forecast_app_title)
+    // Named before it is read, so the bar the list was under does not start saying the app's name.
+    is DayDetailsUiState.Loading -> title
+    DayDetailsUiState.Unavailable -> stringResource(R.string.forecast_app_title)
 }
 
 /** One 3-hour slot of the day log, its temperature marked on the day's own span. */

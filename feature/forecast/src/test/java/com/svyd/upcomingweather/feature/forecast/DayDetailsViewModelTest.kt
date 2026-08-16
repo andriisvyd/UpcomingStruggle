@@ -1,7 +1,6 @@
 package com.svyd.upcomingweather.feature.forecast
 
 import com.svyd.upcomingweather.core.domain.usecase.ObserveDay
-import com.svyd.upcomingweather.core.domain.usecase.ObserveForecast
 import com.svyd.upcomingweather.feature.forecast.mapper.FakeForecastStrings
 import com.svyd.upcomingweather.feature.forecast.mapper.ForecastUiMapper
 import com.svyd.upcomingweather.feature.forecast.mapper.RETRIEVED_AT
@@ -22,10 +21,11 @@ import java.time.Clock
 import java.time.Duration
 
 /**
- * The day already drawn survives the stream behind it stopping.
+ * The page reads storage, so it has its day as soon as it asks.
  *
- * A fetch announces itself whenever the stream restarts — backgrounding the app is enough — and
- * the page must not empty itself over a day it is already showing.
+ * Nothing is fetched on this screen's behalf and nothing can fail on it, which is what makes both
+ * of these true: the day arrives without a wait, and it survives the stream behind it stopping and
+ * starting — backgrounding the app is enough to do that.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class DayDetailsViewModelTest {
@@ -39,7 +39,24 @@ class DayDetailsViewModelTest {
     fun tearDown() = Dispatchers.resetMain()
 
     @Test
-    fun `a fetch behind a day already drawn does not empty the page`() = runTest {
+    fun `the day is drawn without waiting on anything`() = runTest {
+        val viewModel = viewModel()
+
+        val states = mutableListOf<DayDetailsUiState>()
+        val watching = backgroundScope.launch { viewModel.state.collect(states::add) }
+        advanceTimeBy(1_000)
+        watching.cancel()
+
+        assertTrue("expected the stored day: $states", states.last() is DayDetailsUiState.Content)
+        assertTrue(
+            "nothing should have reported the day missing: $states",
+            states.none { it is DayDetailsUiState.Unavailable },
+        )
+    }
+
+    /** Leaving the screen and coming back asks storage the same question and gets it back at once. */
+    @Test
+    fun `the day is still there when the stream is restarted`() = runTest {
         val viewModel = viewModel()
 
         val first = mutableListOf<DayDetailsUiState>()
@@ -62,30 +79,8 @@ class DayDetailsViewModelTest {
         )
     }
 
-    /**
-     * The page a stored day is already on does not empty itself when the fetch behind it fails.
-     *
-     * This is what opening a day past its age with no connection looks like: storage answers, the
-     * fetch goes out behind it and comes back with nothing.
-     */
-    @Test
-    fun `a failed fetch behind a day already drawn does not empty the page`() = runTest {
-        val viewModel = viewModel(failing = true)
-
-        val states = mutableListOf<DayDetailsUiState>()
-        val watching = backgroundScope.launch { viewModel.state.collect(states::add) }
-        advanceTimeBy(1_000)
-        watching.cancel()
-
-        assertTrue("expected the stored day: $states", states.any { it is DayDetailsUiState.Content })
-        assertTrue(
-            "the page reported the day unavailable over one it was drawing: $states",
-            states.none { it is DayDetailsUiState.Unavailable },
-        )
-    }
-
-    private fun viewModel(failing: Boolean = false) = DayDetailsViewModel(
-        observeDay = ObserveDay(ObserveForecast(FakeSelection(), FakeForecasts(failing = failing))),
+    private fun viewModel() = DayDetailsViewModel(
+        observeDay = ObserveDay(FakeSelection(), FakeForecasts()),
         date = testDate,
         mapper = ForecastUiMapper(
             strings = FakeForecastStrings(),

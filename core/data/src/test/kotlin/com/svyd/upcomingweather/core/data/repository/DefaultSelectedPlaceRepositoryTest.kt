@@ -15,19 +15,34 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.TestScope
 import org.junit.Test
 
 class DefaultSelectedPlaceRepositoryTest {
 
+    /**
+     * The selection is kept alive in the test's own scope, so the sharing settles when the test
+     * scheduler says rather than on a dispatcher nothing here controls.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun TestScope.repository(selections: SelectionLocalSource) =
+        DefaultSelectedPlaceRepository(
+            selections = selections,
+            scope = CoroutineScope(
+                backgroundScope.coroutineContext + UnconfinedTestDispatcher(testScheduler),
+            ),
+        )
+
     @Test
     fun `nothing is selected until something is`() = runTest {
-        assertNull(DefaultSelectedPlaceRepository(FakeSelections()).selected.first())
+        assertNull(repository(FakeSelections()).selected.first())
     }
 
     @Test
     fun `what was written comes back as a place`() = runTest {
         val selections = FakeSelections()
-        val repository = DefaultSelectedPlaceRepository(selections)
+        val repository = repository(selections)
 
         repository.select(budapest)
 
@@ -43,7 +58,7 @@ class DefaultSelectedPlaceRepositoryTest {
     @Test
     fun `writing the same selection twice is reported once`() = runTest {
         val selections = FakeSelections()
-        val repository = DefaultSelectedPlaceRepository(selections)
+        val repository = repository(selections)
         val seen = mutableListOf<SelectedPlace?>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             repository.selected.toList(seen)
@@ -59,7 +74,7 @@ class DefaultSelectedPlaceRepositoryTest {
     @Test
     fun `a different selection is reported`() = runTest {
         val selections = FakeSelections()
-        val repository = DefaultSelectedPlaceRepository(selections)
+        val repository = repository(selections)
         val seen = mutableListOf<SelectedPlace?>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             repository.selected.toList(seen)

@@ -149,8 +149,14 @@ data class OfflineUi(
 @Immutable
 sealed interface DayDetailsUiState {
 
-    /** Nothing to draw yet. */
-    data object Loading : DayDetailsUiState
+    /**
+     * The day is not read yet, but which day it is was known before this screen opened.
+     *
+     * [title] is carried so the app bar can name it from the first frame. The bar does not slide in
+     * with the page — it is the same bar the list was under — so a page still arriving with nothing
+     * to say would be seen saying the app's own name.
+     */
+    data class Loading(val title: String) : DayDetailsUiState
 
     data class Content(
         /** Names the day being shown. */
