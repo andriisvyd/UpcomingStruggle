@@ -21,6 +21,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import com.svyd.upcomingweather.core.designsystem.foundation.LocalScreenTransitionScope
 import com.svyd.upcomingweather.core.designsystem.foundation.animationsEnabled
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -98,6 +99,7 @@ fun NoirTypedText(
 
     // Deliberately outside the key above, so it survives the words changing.
     var everTyped by remember { mutableStateOf(false) }
+    val animateChildren = LocalScreenTransitionScope.current?.animateChildren == true
 
     LaunchedEffect(text.text, typing) {
         // Written already: recycled back into view, or animations are off.
@@ -107,7 +109,7 @@ fun NoirTypedText(
         // is made to type top to bottom as it is first drawn; words that replace words already
         // written are answering something, and holding the line blank while they wait reads as the
         // page having lost its train of thought.
-        if (!everTyped) delay(startDelay)
+        if (!everTyped && animateChildren) delay(startDelay)
         everTyped = true
 
         started = true
