@@ -6,12 +6,21 @@
 
     <!--
         The theme the launcher opens into, handed back to Theme.UpcomingWeather once Compose draws.
-        Background, icon and window background are all the same flat color, so from the moment the
-        icon is tapped there is one surface on screen and the marks simply start turning over on it.
+        From the moment the icon is tapped there is one surface on screen and the marks simply start
+        turning over on it: the background here is the tone the app's grained page settles at rather
+        than the colour under the grain, so the page arriving adds texture and changes nothing else.
+
+        The icon is the launcher's mark, the * of a clear sky, which is the one the cycle opens on.
+        The system holds it until Compose has a frame, and that frame draws the same mark in the
+        same place: the set starts turning over from what the launcher was already showing, so what
+        the reader sees is one mark beginning to change rather than a second screen.
+
+        Its own drawable rather than the launcher's, because the launcher's fills an icon canvas
+        and this one has to match a 44 sp glyph — see splash_mark for the arithmetic.
     -->
     <style name="Theme.UpcomingWeather.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/noir_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
+        <item name="windowSplashScreenBackground">@color/noir_background_grained</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_mark</item>
         <item name="postSplashScreenTheme">@style/Theme.UpcomingWeather</item>
     </style>
 </resources>

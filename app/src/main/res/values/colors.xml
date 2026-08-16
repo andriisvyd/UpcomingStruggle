@@ -2,4 +2,14 @@
 <resources>
     <!-- Day · gritty paper. Matches core:designsystem so the window never flashes a wrong color. -->
     <color name="noir_background">#E2DFD7</color>
+
+    <!-- Day · the same paper once the grain is on it: uniform grey noise at 0.10 averages to
+         0.9 of the colour plus 12.75 a channel. The system splash takes a colour and cannot take a
+         texture, so it takes the tone the grained page settles at — what appears at the hand-off is
+         then the grain itself rather than the page changing brightness. -->
+    <color name="noir_background_grained">#D8D5CE</color>
+
+    <!-- Day · sodium, the ink a clear sky is drawn in. NoirColors.sodium, so the mark the system
+         holds and the mark Compose draws first are the same colour as well as the same shape. -->
+    <color name="noir_sodium">#8F5B0E</color>
 </resources>
