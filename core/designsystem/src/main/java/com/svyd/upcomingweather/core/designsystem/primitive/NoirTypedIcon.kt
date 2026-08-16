@@ -12,9 +12,9 @@ sealed class NoirTypedIcon(val mark: String) {
     data object Search: NoirTypedIcon(mark = "[?]")
     data object Error: NoirTypedIcon("(x)")
     data object CloudOff: NoirTypedIcon("{~/~}")
-    data object Clear: NoirTypedIcon(" >< ")
+    data object Clear: NoirTypedIcon("[x]")
     data object Clock: NoirTypedIcon(mark = "( <)")
-    data object Gps: NoirTypedIcon(mark = "[x]")
+    data object Gps: NoirTypedIcon(mark = "[><]")
     data object Back: NoirTypedIcon(mark = "[<]")
     class Condition(condition: NoirCondition): NoirTypedIcon(mark = condition.mark)
 }
