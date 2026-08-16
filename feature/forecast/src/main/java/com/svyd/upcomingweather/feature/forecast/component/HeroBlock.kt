@@ -23,7 +23,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.svyd.upcomingweather.core.designsystem.theme.NoirSpacing
 import com.svyd.upcomingweather.core.designsystem.foundation.NoirBackground
+import com.svyd.upcomingweather.core.designsystem.foundation.ScreenTravel
 import com.svyd.upcomingweather.core.designsystem.foundation.largeFontScale
+import com.svyd.upcomingweather.core.designsystem.foundation.travelsBetweenScreens
 import com.svyd.upcomingweather.core.designsystem.preview.NoirPreviews
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTiltedStamp
 import com.svyd.upcomingweather.core.designsystem.primitive.NoirTypedText
@@ -33,6 +35,14 @@ import com.svyd.upcomingweather.feature.forecast.R
 import com.svyd.upcomingweather.feature.forecast.model.Freshness
 import com.svyd.upcomingweather.feature.forecast.model.HeroUi
 import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * The mark the splash comes to rest on, handed to the dashboard's hero.
+ *
+ * The only journey of its kind in the app: the day details screen draws a hero too, and is handed
+ * no travel at all, so its mark simply arrives with the page it is on.
+ */
+internal val OpeningGlyphTravel = ScreenTravel(key = "hero-condition-glyph")
 
 /**
  * The block at the top of both forecast screens: temperature, stamp, the voiced line, the meta
@@ -45,6 +55,7 @@ import kotlin.time.Duration.Companion.milliseconds
 fun HeroBlock(
     modifier: Modifier = Modifier,
     hero: HeroUi,
+    glyphTravel: ScreenTravel? = null,
 ) {
     val ink = hero.condition.ink()
     Column(
@@ -89,6 +100,7 @@ fun HeroBlock(
                     style = NoirTheme.type.glyphHero,
                     modifier = Modifier
                         .padding(start = GlyphStartGap, top = GlyphTopGap)
+                        .travelsBetweenScreens(glyphTravel)
                         .clearAndSetSemantics { },
                 )
             }

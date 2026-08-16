@@ -119,7 +119,8 @@ fun DayDetailsScreen(
 
                 is DayDetailsUiState.Content -> DayLog(
                     state = state,
-                    scrollState = scrollState)
+                    scrollState = scrollState,
+                )
             }
         }
     }

@@ -10,6 +10,9 @@ import kotlinx.serialization.Serializable
  * The details route carries a date and re-reads the forecast already in hand.
  */
 @Serializable
+data object SplashRoute
+
+@Serializable
 data object ForecastRoute
 
 @Serializable

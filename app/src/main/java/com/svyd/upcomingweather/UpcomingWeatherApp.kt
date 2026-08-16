@@ -5,18 +5,25 @@ import android.app.Activity
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
 import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -27,32 +34,31 @@ import com.svyd.upcomingweather.feature.forecast.screen.DashboardScreen
 import com.svyd.upcomingweather.feature.forecast.screen.DayDetailsScreen
 import com.svyd.upcomingweather.feature.forecast.screen.SplashScreen
 import com.svyd.upcomingweather.feature.search.SearchScreen
+import com.svyd.upcomingweather.core.designsystem.foundation.LocalScreenTransitionScope
+import com.svyd.upcomingweather.core.designsystem.foundation.LocalSharedTransitionScope
+import com.svyd.upcomingweather.core.designsystem.foundation.ScreenTransitionScope
 import com.svyd.upcomingweather.navigation.DayDetailsRoute
 import com.svyd.upcomingweather.navigation.ForecastRoute
 import com.svyd.upcomingweather.navigation.SearchRoute
+import com.svyd.upcomingweather.navigation.SplashRoute
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /**
- * The whole app: one host, three destinations, behind an opening.
+ * The whole app: one host, four destinations.
  *
  * Nothing but navigation happens here. Each destination owns its own state, and the choice of city
  * travels between them through the domain rather than through this function.
  *
- * The splash sits outside the host rather than in it: it is not somewhere anyone can navigate to or
- * back to, and there is no transition to speak of — the host replaces it on the frame it finishes.
- * Whether it is finished is kept across configuration changes, so a rotation on the dashboard does
- * not open the app again.
+ * Screens slide; nothing fades. A page on its way out is not worth watching, so it leaves at the
+ * pace it is pushed and the arriving one sets the timing. The splash is a destination rather than a
+ * gate in front of the host, because handing the glyph over to the dashboard needs both screens
+ * inside one [SharedTransitionLayout] and the scope a `composable` gives its content.
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
-    var opened by rememberSaveable { mutableStateOf(false) }
-    if (!opened) {
-        SplashScreen(onDone = { opened = true }, modifier = modifier)
-        return
-    }
-
     val navController = rememberNavController()
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -67,46 +73,101 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
         }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = ForecastRoute,
-        modifier = modifier.fillMaxSize(),
-        enterTransition = { fadeIn() },
-        exitTransition = { fadeOut() },
-    ) {
-        composable<ForecastRoute> {
-            DashboardScreen(
-                onSearchClick = { navController.navigate(SearchRoute) },
-                onDayClick = { date -> navController.navigate(DayDetailsRoute(date)) },
-                onRequestLocationPermission = {
-                    permissionLauncher.launch(LOCATION_PERMISSIONS)
-                },
-                permissionResult = permissionResult.receiveAsFlow(),
-                onOpenSettings = { context.openAppSettings() },
-            )
-        }
+    SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
+        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+            NavHost(
+                navController = navController,
+                startDestination = SplashRoute,
+                enterTransition = { slideInHorizontally(SlideSpec) { width -> width } },
+                exitTransition = { slideOutHorizontally(SlideSpec) { width -> -width / 4 } },
+                popEnterTransition = { slideInHorizontally(SlideSpec) { width -> -width / 4 } },
+                popExitTransition = { slideOutHorizontally(SlideSpec) { width -> width } },
+            ) {
+                // Both ends are still: the glyph travelling to its place on the dashboard is the
+                // whole transition, and a page sliding under it would only be something else to
+                // watch. What the dashboard does with the rest of its content is the dashboard's.
 
-        composable<SearchRoute> {
-            SearchScreen(
-                onDone = { navController.popBackStack() },
-                onBack = navController::popBackStack,
-                onRequestLocationPermission = {
-                    permissionLauncher.launch(LOCATION_PERMISSIONS)
-                    navController.popBackStack()
-                },
-                onOpenSettings = { context.openAppSettings() },
-            )
-        }
+                composable<SplashRoute>(exitTransition = { ExitTransition.None }) {
+                    CompositionLocalProvider(LocalScreenTransitionScope provides ScreenTransitionScope(
+                        scope = this,
+                        animateChildren = false,
+                    )) {
+                        SplashScreen(
+                            onDone = {
+                                navController.navigate(ForecastRoute) {
+                                    popUpTo(SplashRoute) { inclusive = true }
+                                }
+                            },
+                        )
+                    }
+                }
 
-        composable<DayDetailsRoute> { entry ->
-            val route = entry.toRoute<DayDetailsRoute>()
-            DayDetailsScreen(
-                date = LocalDate.parse(route.date),
-                onBack = navController::popBackStack,
-            )
+                composable<ForecastRoute>(
+                    enterTransition = { EnterTransition.None },
+                    popEnterTransition = { EnterTransition.None },
+                ) {
+                    CompositionLocalProvider(LocalScreenTransitionScope provides ScreenTransitionScope(
+                        scope = this,
+                        animateChildren = firstVisit(),
+                    )) {
+                        DashboardScreen(
+                            onSearchClick = { navController.navigate(SearchRoute) },
+                            onDayClick = { date -> navController.navigate(DayDetailsRoute(date)) },
+                            onRequestLocationPermission = {
+                                permissionLauncher.launch(LOCATION_PERMISSIONS)
+                            },
+                            permissionResult = permissionResult.receiveAsFlow(),
+                            onOpenSettings = { context.openAppSettings() },
+                        )
+                    }
+                }
+
+                composable<SearchRoute> {
+                    SearchScreen(
+                        onDone = { navController.popBackStack() },
+                        onBack = navController::popBackStack,
+                        onRequestLocationPermission = {
+                            permissionLauncher.launch(LOCATION_PERMISSIONS)
+                            navController.popBackStack()
+                        },
+                        onOpenSettings = { context.openAppSettings() },
+                    )
+                }
+
+                composable<DayDetailsRoute> { entry ->
+                    val route = entry.toRoute<DayDetailsRoute>()
+                    DayDetailsScreen(
+                        date = LocalDate.parse(route.date),
+                        onBack = navController::popBackStack,
+                    )
+                }
+            }
         }
     }
 }
+
+/**
+ * True the first time a destination is drawn, false every time it is returned to.
+ *
+ * "Did this come from the splash" is the wrong question to ask the back stack, because the splash
+ * is popped inclusive the moment it hands over — by the time the dashboard is drawn there is no
+ * previous entry to name. It is also more than is being asked: a page assembles itself once, and
+ * whether the thing before it was a splash or something added later is beside the point.
+ *
+ * Kept in the destination's own saved state, so it survives everything that leaves and re-enters
+ * this composition while the entry stays on the stack: a trip to a day, and a rotation.
+ */
+@Composable
+private fun firstVisit(): Boolean {
+    val visited = rememberSaveable { mutableStateOf(false) }
+    // Read once. Recording the visit must not cut short the arrival it is recording.
+    val first = remember { !visited.value }
+    SideEffect { visited.value = true }
+    return first
+}
+
+/** One page's worth of travel. Short enough that a tap and its answer read as one gesture. */
+private val SlideSpec = tween<IntOffset>(durationMillis = 220, easing = FastOutSlowInEasing)
 
 /**
  * Whether the platform will still put the prompt in front of the reader.
