@@ -30,7 +30,7 @@ internal class DayDetailsViewModel(
 ) : ViewModel() {
 
     /**
-     * Nothing is held between emissions any more.
+     * Nothing is held between emissions anymore.
      *
      * The stream reads storage, so restarting it — leaving the screen and coming back, or the app
      * being backgrounded — asks the same question and gets the same answer straight away. There is

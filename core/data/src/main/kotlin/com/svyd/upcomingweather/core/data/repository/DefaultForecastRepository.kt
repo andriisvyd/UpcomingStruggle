@@ -14,10 +14,9 @@ import com.svyd.upcomingweather.core.domain.model.SelectedPlace
 import com.svyd.upcomingweather.core.domain.repository.ForecastRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ProducerScope
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
@@ -72,12 +71,17 @@ internal class DefaultForecastRepository(
         at: SelectedPlace,
         maxAge: Duration,
         force: Boolean,
-    ): Flow<ForecastRead> = callbackFlow {
+    ): Flow<ForecastRead> = channelFlow {
+        // A channel rather than a plain flow because two coroutines report here: the one reading
+        // storage, and the fetch it starts. There is nothing to unsubscribe from and nothing to
+        // wait on — the reading below never ends on its own, so it is what holds this open, and
+        // cancelling the collector cancels it with everything else launched here.
+
         // Decided once, on the first thing storage says, rather than on every change: the save this
         // fetch makes is itself a change, and asking again on the strength of it would never stop.
         var asked = false
 
-        val reading = launch {
+        launch {
             stored(at).collect { forecast ->
                 if (forecast != null) {
                     val old = force || Duration.between(forecast.retrievedAt, clock.instant()) >= maxAge
@@ -92,8 +96,6 @@ internal class DefaultForecastRepository(
                 }
             }
         }
-
-        awaitClose { reading.cancel() }
     }
 
     /** Writes what it gets, and reports what it does not. Either way the stream stays open. */
