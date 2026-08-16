@@ -136,10 +136,18 @@ fun UpcomingWeatherApp(modifier: Modifier = Modifier) {
 
                 composable<DayDetailsRoute> { entry ->
                     val route = entry.toRoute<DayDetailsRoute>()
-                    DayDetailsScreen(
-                        date = LocalDate.parse(route.date),
-                        onBack = navController::popBackStack,
-                    )
+                    CompositionLocalProvider(LocalScreenTransitionScope provides ScreenTransitionScope(
+                        scope = this,
+                        // Nothing on this page arrives under its own steam. The scope is here so the
+                        // bar can be recognised as the same bar the dashboard was under, and for
+                        // nothing else.
+                        animateChildren = false,
+                    )) {
+                        DayDetailsScreen(
+                            date = LocalDate.parse(route.date),
+                            onBack = navController::popBackStack,
+                        )
+                    }
                 }
             }
         }
