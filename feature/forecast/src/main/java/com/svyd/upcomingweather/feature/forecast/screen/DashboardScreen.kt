@@ -362,6 +362,7 @@ private fun DashboardContent(
                     modifier = Modifier.padding(horizontal = NoirSpacing.gutter),
                     hero = content.hero,
                     glyphTravel = OpeningGlyphTravel,
+                    busy = content.busy,
                 )
             }
 
